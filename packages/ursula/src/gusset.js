@@ -6,12 +6,12 @@ export default function (part) {
   points.frontGussetLeft = new Point(store.get('frontGussetLeft').x, 0)
   points.backGussetLeft = new Point(
     store.get('backGussetLeft').x,
-    measurements.seat * options.gussetLength
+    measurements.seat * options.gussetLength * store.get('yScale')
   )
   points.frontGussetRight = new Point(store.get('frontGussetRight').x, 0)
   points.backGussetRight = new Point(
     store.get('backGussetRight').x,
-    measurements.seat * options.gussetLength
+    measurements.seat * options.gussetLength * store.get('yScale')
   )
 
   // Create control points

@@ -20,7 +20,7 @@ export default {
     'sewing pattern',
   ],
   optionGroups: {
-    fit: ['fabricStretch', 'elasticStretch', 'useCrossSeam', 'gussetWidth', 'gussetLength'],
+    fit: ['fabricStretchX', 'fabricStretchY', 'adjustStretch', 'elasticStretch', 'useCrossSeam', 'gussetWidth', 'gussetLength'],
     style: ['rise', 'legOpening', 'frontDip', 'backDip', 'taperToGusset', 'backExposure'],
   },
   optionalMeasurements: ['crossSeam','crossSeamFront'],
@@ -34,21 +34,25 @@ export default {
   parts: ['front', 'back', 'gusset', 'elastic'],
   //Constants
   options: {
-    backToFrontLength: 1.15, // Maybe include this in advanced options?
+    backToFrontLength: 1.15, // used only if useCrossSeam is not used
     backToFrontWidth: 1.1, // Maybe include this in advanced options?
     gussetRatio: 0.7, // Relationship between front and back gusset widths
 
     // Percentages
     gussetWidth: { pct: 7.2, min: 2, max: 12 }, // Gusset width in relation to waist-to-upperleg
     gussetLength: { pct: 12.7, min: 10, max: 16 }, // Gusset length in relation to seat
-    fabricStretch: { pct: 15, min: 0, max: 100 }, // temporary extension for testing
+    fabricStretchX: { pct: 15, min: 0, max: 100 }, // horizontal stretch (range set wide for beta testing)
+    fabricStretchY: {pct: 0, min: 0, max: 100 }, // vertical stretch (range set wide for beta testing)
     rise: { pct: 60, min: 30, max: 100 }, // extending rise beyond 100% would require adapting paths.sideLeft!
     legOpening: { pct: 45, min: 5, max: 85 },
     frontDip: { pct: 5.0, min: -5, max: 15 },
     backDip: { pct: 2.5, min: -5, max: 15 },
     taperToGusset: { pct: 70, min: 5, max: 100 },
     backExposure: { pct: 20, min: -30, max: 90 },
-    elasticStretch: { pct: 8, min: 5, max: 15 },
+    elasticStretch: { pct: 8, min: 5, max: 15 }, // this is in addition to fabric stretch!
+    
+    // booleans
     useCrossSeam: { bool: true },
+    adjustStretch: {bool: true}, // to not stretch fabric to the limits
   },
 }
