@@ -2,16 +2,19 @@ export default function (part) {
   let { options, Point, Path, points, paths, measurements, store, complete, sa, paperless, macro } =
     part.shorthand()
 
+  var yScaleDoubleLayer
+  yScaleDoubleLayer = (1 + store.get('yScale'))/2 // double layer of fabric stretches half as much
+
   // Create points
   points.frontGussetLeft = new Point(store.get('frontGussetLeft').x, 0)
   points.backGussetLeft = new Point(
     store.get('backGussetLeft').x,
-    measurements.seat * options.gussetLength * store.get('yScale')
+    measurements.seat * options.gussetLength * yScaleDoubleLayer
   )
   points.frontGussetRight = new Point(store.get('frontGussetRight').x, 0)
   points.backGussetRight = new Point(
     store.get('backGussetRight').x,
-    measurements.seat * options.gussetLength * store.get('yScale')
+    measurements.seat * options.gussetLength * yScaleDoubleLayer
   )
 
   // Create control points

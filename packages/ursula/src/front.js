@@ -75,8 +75,8 @@ export default function (part) {
   }
   // optionally use crossSeamFront to determine relative length of front and back
   // this does not account for vertical stretch yet
-  if (options.useCrossSeam && measurements.crossSeamFront) { // subtract half the gusset length from cross seam front
-    store.set('frontHeight',measurements.crossSeamFront - measurements.seat*0.5*options.gussetLength)
+  if (options.useCrossSeam && measurements.crossSeamFront) { // subtract half the gusset length from cross seam front, and an additional 3.5% of the seat circumference to move the gusset upward (to match commercial panties)
+    store.set('frontHeight',measurements.crossSeamFront - measurements.seat*(0.5*options.gussetLength + options.gussetShift))
   } else { // subtract gusset length, divide by roughly 2
     store.set('frontHeight',(store.get('crossSeam') - options.gussetLength * measurements.seat)/(1 + options.backToFrontLength))
   }
@@ -231,60 +231,60 @@ export default function (part) {
     }
   }
 
-  // macro('title', {
-    // at: points.frontMidMid,
-    // nr: 1,
-    // title: 'front',
-  // })
+  macro('title', {
+    at: points.frontMidMid,
+    nr: 1,
+    title: 'front',
+  })
 
-  // macro('grainline', {
-    // from: points.frontGussetMid,
-    // to: points.frontGussetMid.shiftFractionTowards(points.frontWaistBandMid, 0.5),
-  // })
+  macro('grainline', {
+    from: points.frontGussetMid,
+    to: points.frontGussetMid.shiftFractionTowards(points.frontWaistBandMid, 0.5),
+  })
 
-  // // Paperless?
-  // if (paperless) {
-    // macro('hd', {
-      // from: points.frontWaistBandRight,
-      // to: points.frontWaistBandLeft,
-      // y: points.frontWaistBandRight.y + sa - 15,
-    // })
-    // macro('hd', {
-      // from: points.frontLegOpeningRight,
-      // to: points.frontLegOpeningLeft,
-      // y: points.frontLegOpeningRight.y + sa - 15,
-    // })
-    // macro('hd', {
-      // from: points.frontGussetLeft,
-      // to: points.frontGussetRight,
-      // y: points.frontGussetLeft.y + sa + 15,
-    // })
-    // macro('vd', {
-      // from: points.frontWaistBandMid,
-      // to: points.frontGussetMid,
-      // x: points.frontWaistBandMid.x + sa + 15,
-    // })
-    // macro('ld', {
-      // from: points.frontWaistBandLeft,
-      // to: points.frontLegOpeningLeft,
-      // d: points.frontWaistBandLeft.y + sa - 15,
-    // })
-    // macro('pd', {
-      // path: new Path()
-        // .move(points.frontGussetRight)
-        // .curve(
-          // points.frontGussetRightCp1,
-          // points.frontLegOpeningRightCp1,
-          // points.frontLegOpeningRight
-        // ),
-      // d: 15,
-    // })
-    // /*    macro('vd', {
-      // from: points.frontWaistBandLeft,
-      // to: points.frontWaistBandMid,
-      // x: points.frontWaistBandMid.x + sa + 15,
-    // }) */
-  // }
+  // Paperless?
+  if (paperless) {
+    macro('hd', {
+      from: points.frontWaistBandRight,
+      to: points.frontWaistBandLeft,
+      y: points.frontWaistBandRight.y + sa - 15,
+    })
+    macro('hd', {
+      from: points.frontLegOpeningRight,
+      to: points.frontLegOpeningLeft,
+      y: points.frontLegOpeningRight.y + sa - 15,
+    })
+    macro('hd', {
+      from: points.frontGussetLeft,
+      to: points.frontGussetRight,
+      y: points.frontGussetLeft.y + sa + 15,
+    })
+    macro('vd', {
+      from: points.frontWaistBandMid,
+      to: points.frontGussetMid,
+      x: points.frontWaistBandMid.x + sa + 15,
+    })
+    macro('ld', {
+      from: points.frontWaistBandLeft,
+      to: points.frontLegOpeningLeft,
+      d: points.frontWaistBandLeft.y + sa - 15,
+    })
+    macro('pd', {
+      path: new Path()
+        .move(points.frontGussetRight)
+        .curve(
+          points.frontGussetRightCp1,
+          points.frontLegOpeningRightCp1,
+          points.frontLegOpeningRight
+        ),
+      d: 15,
+    })
+    /*    macro('vd', {
+      from: points.frontWaistBandLeft,
+      to: points.frontWaistBandMid,
+      x: points.frontWaistBandMid.x + sa + 15,
+    }) */
+  }
 
   return part
 }

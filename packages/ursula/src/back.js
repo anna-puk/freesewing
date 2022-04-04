@@ -31,17 +31,29 @@ export default function (part) {
   )
   
   // back height is given by (estimated) cross seam, minus front and gusset lengths
+  // this does not account for vertical stretch yet
   var backHeight
   backHeight = store.get('crossSeam') - store.get('frontHeight') - options.gussetLength * measurements.seat
+
+  // calculate the actual back height, using yScale above and yScaleReduced below leg opening
+  var backHeightAbove
+  backHeightAbove = store.get('frontHeightAbove') // part above has same height front and back
+  
+  var backHeightBelow
+  backHeightBelow = store.get('yScale')*(backHeight - backHeightAbove/store.get('yScaleReduced'))
+  
+  var backHeightReduced
+  backHeightReduced = backHeightBelow + backHeightAbove
+  
   points.backGussetLeft = new Point(
     measurements.seat / 4 -
       ((measurements.waist * options.gussetWidth * store.get('xScale')) / options.gussetRatio) *
         options.backToFrontWidth,
-    backHeight
+    backHeightReduced
   )
   points.backGussetMid = new Point(
     measurements.seat / 4,
-    backHeight
+    backHeightReduced
   )
 
   points.backGussetRight = points.backGussetLeft.flipX(points.backWaistMid)

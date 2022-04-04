@@ -37,6 +37,7 @@ export default {
     backToFrontLength: 1.15, // used only if useCrossSeam is not used
     backToFrontWidth: 1.1, // Maybe include this in advanced options?
     gussetRatio: 0.7, // Relationship between front and back gusset widths
+	gussetShift: 0.015, // fraction of seat circumference - could be an advanced option?
 
     // Percentages
     gussetWidth: { pct: 7.2, min: 2, max: 12 }, // Gusset width in relation to waist-to-upperleg
