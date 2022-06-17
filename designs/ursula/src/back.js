@@ -182,6 +182,7 @@ export default function (part) {
         .move(points.backGussetRight)
         .curve(points.backGussetRightCp1, points.backFlareRightCp2, points.backFlareRight)
         .curve(points.backFlareRightCp1, points.backLegOpeningRightCp1, points.backLegOpeningRight)
+        .length()
     )
   }
 

@@ -125,3 +125,13 @@ scripts/verdaccio.sh
 !markdown/dev/reference/api/point/dist
 
 .test-failures.log
+package.json
+yarn.lock
+yarn.lock
+package.json
+packages/ursula/example/src/pattern
+packages/ursula/example/src/pattern
+packages/ursula/src/dummy.js
+packages/ursula/src/front2_temp_with_older_marker_code_20220507.js
+packages/ursula/src/make_a_new_pattern_symlink.txt
+packages/ursula/src/unice.ses
