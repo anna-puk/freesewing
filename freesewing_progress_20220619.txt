@@ -1,0 +1,49 @@
+trying to run 'yarn lab' in \designs\ursula initially gave me:
+
+\GitHub\freesewing\designs\ursula>yarn lab
+yarn run v1.22.15
+$ cd ../../sites/lab && yarn start
+$ yarn prebuild && yarn dev
+$ SITE=lab node --experimental-json-modules ../shared/prebuild/index.mjs
+'SITE' is not recognized as an internal or external command,
+operable program or batch file.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+'yarn tips' does work, and suggested running 'yarn kickstart' in "the monorepo root"
+
+running 'yarn kickstart' in \GitHub\freesewing\ seems to do the trick:
+
+(see Discord for further errors)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+looks like a bug:
+
+yarn run v1.22.15\repos\GitHub\freesewing\designs\ursula>cd ..
+$ npx lerna bootstrap && yarn buildall
+lerna notice cli v4.0.0\GitHub\freesewing\designs>cd ..
+lerna notice filter excluding "component-*"
+lerna info filter [ '!component-*' ]ewing>yarn kickstart
+lerna info bootstrap root only
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[###########################################################################################################] 3471/3478
+
+(output of yarn kickstart is overwriting older lines in the command window)

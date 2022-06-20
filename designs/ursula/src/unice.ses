@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<NotepadPlus>
+    <Session activeView="1">
+        <mainView activeIndex="8">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="3464" startPos="1155" endPos="1155" selMode="0" offset="0" wrapCount="1" lang="None (Normal Text)" encoding="-1" userReadOnly="no" filename="D:\AltUsers\lydia\repos\GitHub\freesewing\freesewing_progress_20220228.txt" backupFilePath="" originalFileLastModifTimestamp="164580245" originalFileLastModifTimestampHigh="30948271" mapFirstVisibleDisplayLine="-1" mapFirstVisibleDocLine="-1" mapLastVisibleDocLine="-1" mapNbLine="-1" mapHigherPos="-1" mapWidth="-1" mapHeight="-1" mapKByteInDoc="1262225673" mapWrapIndentMode="-1" mapIsWrap="no" />
+            <File firstVisibleLine="67" xOffset="0" scrollWidth="2516613" startPos="3946" endPos="3946" selMode="0" offset="0" wrapCount="1" lang="JSON" encoding="-1" userReadOnly="no" filename="D:\AltUsers\lydia\repos\GitHub\freesewing\package.json" backupFilePath="" originalFileLastModifTimestamp="164640204" originalFileLastModifTimestampHigh="30948271" mapFirstVisibleDisplayLine="-1" mapFirstVisibleDocLine="-1" mapLastVisibleDocLine="-1" mapNbLine="-1" mapHigherPos="-1" mapWidth="-1" mapHeight="-1" mapKByteInDoc="-354495696" mapWrapIndentMode="-1" mapIsWrap="no" />
+        </mainView>
+        <subView activeIndex="0">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1200" startPos="0" endPos="0" selMode="0" offset="0" wrapCount="1" lang="None (Normal Text)" encoding="-1" userReadOnly="no" filename="D:\AltUsers\lydia\repos\GitHub\freesewing\measurements_list.txt" backupFilePath="" originalFileLastModifTimestamp="285636097" originalFileLastModifTimestampHigh="30957870" mapFirstVisibleDisplayLine="-1" mapFirstVisibleDocLine="-1" mapLastVisibleDocLine="-1" mapNbLine="-1" mapHigherPos="-1" mapWidth="-1" mapHeight="-1" mapKByteInDoc="512" mapWrapIndentMode="-1" mapIsWrap="no" />
+        </subView>
+    </Session>
+</NotepadPlus>

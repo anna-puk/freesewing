@@ -1,0 +1,1 @@
+mklink /D "D:\AltUsers\lydia\repos\GitHub\freesewing\packages\ursula\example\src\pattern" "D:\AltUsers\lydia\repos\GitHub\freesewing\packages\ursula\"
