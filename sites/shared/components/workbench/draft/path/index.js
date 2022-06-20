@@ -11,7 +11,7 @@ export const Tr = ({ children }) => <tr className="border border-base-300">{chil
 export const KeyTd = ({ children }) => <td className="p-3 text-right">{children}:</td>
 export const ValTd = ({ children }) => <td className="p-3">{children}</td>
 
-const TextAlongPath = ({id, size, fill="var(--pattern-note)", txt}) => (
+export const TextAlongPath = ({id, size, fill="var(--pattern-note)", txt}) => (
   <text>
     <textPath xlinkHref={`#${id}`} startOffset="50%">
       <tspan
@@ -24,7 +24,7 @@ const TextAlongPath = ({id, size, fill="var(--pattern-note)", txt}) => (
     </textPath>
   </text>
 )
-const PointCircle = ({ point, size, className="stroke-neutral-content" }) => (
+export const PointCircle = ({ point, size, className="stroke-neutral-content" }) => (
   <circle
     cx={point.x} cy={point.y} r={size/50}
     className={className}
@@ -76,7 +76,7 @@ const pathDimensions = (from, to, cp1=false, cp2=false, path=false) => {
   }
 }
 
-const Defs = () => (
+export const Defs = () => (
   <defs>
     <marker orient="auto" refY="0.0" refX="0.0" id="arrowTo" style={{overflow: 'visible'}}>
       <path className="fill-neutral-content" d="M 0,0 L -12,-4 C -10,-2 -10,2  -12, 4 z" fillOpacity="0.5"></path>
@@ -87,7 +87,7 @@ const Defs = () => (
   </defs>
 )
 
-const svgProps = {
+export const svgProps = {
   xmlns: "http://www.w3.org/2000/svg",
   xmlnsSvg: "http://www.w3.org/2000/svg",
   xmlnsXlink: "http://www.w3.org/1999/xlink",
@@ -330,49 +330,61 @@ export const Attributes = ({ list }) => list
     </ul>
   ) : null
 
-const pathInfo = (props) => {
+export const pathInfo = (props) => {
   const bbox = props.path.boundary()
 
   return (
     <div className="p-4 border bg-neutral bg-opacity-40 shadow rounded-lg">
       <h5 className="text-neutral-content text-center pb-4">Path info</h5>
       <div className="flex flex-row flex-wrap overflow-scroll" style={{ maxHeight: '80vh' }}>
-        <table className="border-collapse h-fit">
-          <tbody>
-            <Tr>
-              <KeyTd>Name</KeyTd>
-              <ValTd>{bbox.name}</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Length</KeyTd>
-              <ValTd>{round(props.path.length(), 2)}mm</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Width</KeyTd>
-              <ValTd>{round(bbox.bottomRight.x - bbox.topLeft.x, 2)}mm</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Height</KeyTd>
-              <ValTd>{round(bbox.bottomRight.y - bbox.topLeft.y, 2)}mm</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Top Left</KeyTd>
-              <ValTd>{pointCoords(bbox.topLeft)}</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Bottom Right</KeyTd>
-              <ValTd>{pointCoords(bbox.bottomRight)}</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Part</KeyTd>
-              <ValTd>{props.partName}</ValTd>
-            </Tr>
-            <Tr>
-              <KeyTd>Attributes</KeyTd>
-              <ValTd><Attributes list={bbox.attributes.list} /></ValTd>
-            </Tr>
-          </tbody>
-        </table>
+        <div>
+          <table className="border-collapse h-fit">
+            <tbody>
+              <Tr>
+                <KeyTd>Name</KeyTd>
+                <ValTd>{bbox.name}</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Length</KeyTd>
+                <ValTd>{round(props.path.length(), 2)}mm</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Width</KeyTd>
+                <ValTd>{round(bbox.bottomRight.x - bbox.topLeft.x, 2)}mm</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Height</KeyTd>
+                <ValTd>{round(bbox.bottomRight.y - bbox.topLeft.y, 2)}mm</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Top Left</KeyTd>
+                <ValTd>{pointCoords(bbox.topLeft)}</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Bottom Right</KeyTd>
+                <ValTd>{pointCoords(bbox.bottomRight)}</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Part</KeyTd>
+                <ValTd>{props.partName}</ValTd>
+              </Tr>
+              <Tr>
+                <KeyTd>Attributes</KeyTd>
+                <ValTd><Attributes list={bbox.attributes.list} /></ValTd>
+              </Tr>
+            </tbody>
+          </table>
+          <div className="flex flex-row flex-wrap gap-2 mt-4">
+            <button
+              className="btn btn-success"
+              onClick={() => console.log(props.path)}
+            >console.log(path)</button>
+            <button
+              className="btn btn-success"
+              onClick={() => console.table(props.path)}
+            >console.table(path)</button>
+          </div>
+        </div>
         <table className="border-collapse h-fit">
           <tbody>
             {props.path.ops.map((op, i) => (
@@ -438,6 +450,7 @@ const XrayPath = props => {
         {...getProps(props.path)}
         className="opacity-0 stroke-7xl stroke-contrast hover:opacity-25 hover:cursor-pointer"
         onClick={(evt) => { evt.preventDefault(); props.showInfo(pathInfo(props)) }}
+        markerStart="none" markerEnd="none"
       />
       {ops.length > 0
         ? ops.map((op,i) => (op.ops[1].type === 'curve')
