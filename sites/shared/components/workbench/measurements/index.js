@@ -1,10 +1,14 @@
 import React from 'react'
 import MeasurementInput from '../inputs/measurement.js'
-import { withBreasts, withoutBreasts } from 'pkgs/models/src/index.js'
+import { withBreasts, withoutBreasts } from '@freesewing/models'
 import nonHuman from './non-human.js'
 import WithBreastsIcon from 'shared/components/icons/with-breasts.js'
 import WithoutBreastsIcon from 'shared/components/icons/without-breasts.js'
 import { useTranslation } from 'next-i18next'
+import Setting from '../menu/core-settings/setting';
+import {settings} from '../menu/core-settings/index';
+import Popout from 'shared/components/popout'
+import Code from 'shared/components/code'
 
 const groups = {
   people: {
@@ -50,6 +54,11 @@ const WorkbenchMeasurements = ({ app, design, gist, updateGist }) => {
           {design.config.name}:
         </span> {t('measurements')}
       </h1>
+      <Popout fixme>
+        <h5>Debug for issue <a href="https://github.com/freesewing/freesewing/issues/2281">#2281</a></h5>
+        <p>Current value of <Code>gist.measurements</Code></p>
+        <pre>{JSON.stringify(gist.measurements, null ,2)}</pre>
+      </Popout>
       <details open className="my-2">
         <summary><h2 className="inline pl-1">{t('cfp:preloadMeasurements')}</h2></summary>
         <div className="ml-2 pl-4 border-l-2">
@@ -70,7 +79,7 @@ const WorkbenchMeasurements = ({ app, design, gist, updateGist }) => {
                             {icons[type]}
                             {t('size')}&nbsp;
                             { group === 'people'
-                              ? m.slice(-2)
+                              ? m.replace('size', '')
                               : m
                             }
                           </button>
@@ -87,6 +96,7 @@ const WorkbenchMeasurements = ({ app, design, gist, updateGist }) => {
 
       <details className="my-2">
         <summary><h2 className="inline pl-2">{t('cfp:enterMeasurements')}</h2></summary>
+        <Setting key={'units'} setting={'units'} config={settings.units} updateGist={updateGist} {...inputProps} />
         <div className="ml-2 pl-4 border-l-2">
           {design.config.measurements && (
             <>

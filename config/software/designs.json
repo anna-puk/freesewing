@@ -1,6 +1,7 @@
 {
   "accessories": {
     "benjamin": "A FreeSewing pattern for a bow tie",
+    "bob": "A FreeSewing pattern for a bib",
     "florence": "A FreeSewing pattern for a face mask",
     "florent": "A FreeSewing pattern for a flat cap",
     "hi": "A FreeSewing pattern for a shark plush toy",
@@ -13,6 +14,7 @@
     "bent": "A FreeSewing pattern for a menswear body block with a two-part sleeve",
     "breanna": "A FreeSewing pattern for a basic body block for womenswear",
     "brian": "A FreeSewing pattern for a basic body block for menswear",
+    "noble": "A FreeSewing pattern for a princess seam bodice block",
     "titan": "A FreeSewing pattern for a unisex trouser block"
   },
   "garments": {

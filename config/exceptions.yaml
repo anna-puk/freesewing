@@ -9,6 +9,7 @@ customBuild:
   - gatsby-remark-jargon
   - i18n
   - models
+  - new-design
   - prettier-config
   - remark-jargon
   - plugin-bundle
@@ -74,6 +75,21 @@ packageJson:
     author: SeaZeeZee (https://github.com/SeaZeeZee)
   lunetius: &starf
     author: Starfetch (https://github.com/starfetch)
+  new-design:
+    files:
+      - README.md
+      - package.json
+      - dist/*
+      - lib/**/*
+      - shared/**/*
+      - templates/**/*
+      - index.mjs
+      - package.json
+    bin:
+      "@freesewing/new-design": "index.mjs"
+
+  noble:
+    author: woutervdub (https://github.com/woutervdub)
   plugin-gore:
     author: AlfaLyr (https://github.com/alfalyr)
   prettier-config:
