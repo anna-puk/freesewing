@@ -5,9 +5,15 @@ import mustache from 'mustache'
 import rdir from 'recursive-readdir'
 import chalk from 'chalk'
 import prompts from 'prompts'
-import {oraPromise} from 'ora'
+import { oraPromise } from 'ora'
 import { execa } from 'execa'
 import axios from 'axios'
+import { fileURLToPath } from 'url';
+
+// Current working directory
+const cwd = __dirname
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
 
 const nl = "\n"
 const tab = "  "
@@ -93,18 +99,27 @@ const copyTemplate = async (config, choices) => {
 
   // Copy shared files
   for (const from of config.files.shared) {
-    const to = config.dest + from.slice(config.source.shared.length)
+    // FIXME: Explain the -7
+    const to = join(config.dest, from.slice(config.source.shared.length - 7))
     if (!dirs[to]) await ensureDir(to)
-    console.log(to)
     promises.push(copyFile(from, to))
   }
 
   // Template files
   for (const from of config.files.template) {
-    const to = config.dest + from.slice(config.source.template.length)
+    /*
+     * We can't include a package.json file in the templates
+     * because doing so will prevent NPM from including those folders
+     * in our package. So we use _package.json, and if we see that we
+     * rename it here to package.json
+     */
+    let to = join(config.dest, from.slice(config.source.template.length -7))
+    if (to.slice(-13) === '_package.json') {
+      to = to.slice(0, -13) + 'package.json'
+    }
     if (!dirs[to]) await ensureDir(to)
-    if (extname(from) === '.json') {
-      // Template out package.json
+    if ([ 'config.js', 'kage.json'].indexOf(from.slice(-9)) !== -1) {
+      // Template out file rather than coy it
       const src = await readFile(from, 'utf-8')
       promises.push(
         writeFile(to, mustache.render(src, { name: choices.name }))
@@ -131,7 +146,6 @@ const installDependencies = async (config, choices) => await execa(
 
 // Helper method to download web environment
 const downloadLabFiles = async (config) => {
-  const base = 'https://raw.githubusercontent.com'
   const promises = []
   for (const dir in config.fetch) {
     for (const file of config.fetch[dir]) {
@@ -139,9 +153,8 @@ const downloadLabFiles = async (config) => {
         ? join(config.dest, file)
         : join(config.dest, file.to)
       if (!dirs[to]) await ensureDir(to)
-      console.log(to)
       promises.push(
-        axios.get(`${base}/${config.repo}/${config.branch}/${dir}/${typeof file === 'string' ? file : file.from}`)
+        axios.get(`${config.fileUri}/${config.repo}/${config.branch}/${dir}/${typeof file === 'string' ? file : file.from}`)
         .catch(err => console.log(err))
         .then(res => promises.push(writeFile(to, res.data)))
       )
@@ -153,17 +166,56 @@ const downloadLabFiles = async (config) => {
   return
 }
 
+// Helper method to initialize a git repository
+const initGitRepo = async (config, choices) => {
+  await writeFile(join(config.dest, '.gitignore'), config.gitignore, 'utf-8')
+
+  return execa(
+    `git init -b main && git add . && git commit -m ":tada: Initialized ${choices.name} repository"`,
+    {
+      cwd: config.dest,
+      shell: true
+    }
+  )
+}
+
+// Tips
+const showTips = (config, choices) => console.log(`
+  All done 🤓 Your new design ${chalk.yellow.bold(choices.name)} was initialized in: ${chalk.green.bold(config.dest)}
+
+  The code for your design is in the ${chalk.yellow.bold('design')} folder.
+  The other files and folders are the development environment. You can safely ignore those.
+
+  To start your development environment, follow these three steps:
+
+    1) Start by entering the directory: ${chalk.blue.bold('cd ' + config.dest)}
+    2) Then run this command: ${chalk.blue.bold((choices.manager === 'yarn' ? 'yarn dev' : 'npm run dev'))}
+    3) Now open your browser and navigate to ${chalk.green('http://localhost:8000/')}
+
+  ${chalk.bold.yellow('🤔 More info & help')}
+  ${chalk.gray('≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡')}
+
+  FreeSewing's documentation for developers is available at: ${chalk.green('https://freesewing.dev/')}
+
+  Our community is on Discord: ${chalk.green('https://discord.freesewing.dev/')}
+  The ${chalk.bold('development-help')} channel is a good place to ask for help if you get stuck
+
+
+  Happy hacking 🤓
+`)
+
+
 // Creates the environment based on the user's choices
 export const createEnvironment = async (choices) => {
 
   // Store directories for re-use
-  config.cwd = process.cwd()
+  config.cwd = cwd,
   config.source = {
-    root: dirname(process.argv[1]),
-    template: dirname(process.argv[1]) + `/templates/from-${choices.template}`,
-    shared: dirname(process.argv[1]) + `/shared`
+    root: cwd,
+    template: cwd + `/../templates/from-${choices.template}`,
+    shared: cwd + `/../shared`
   }
-  config.dest = join(config.cwd, choices.name)
+  config.dest = join(process.cwd(), choices.name)
 
   // Create target directory
   await mkdir(config.dest, { recursive: true })
@@ -174,86 +226,58 @@ export const createEnvironment = async (choices) => {
     shared: await rdir(config.source.shared),
   }
 
+  // Output a linebreak
+  console.log()
+
   // Copy/Template files
-  await copyTemplate(config, choices)
+  try {
+    await oraPromise(
+      copyTemplate(config, choices),
+      {
+        text: chalk.white.bold('🟨⬜⬜⬜  Copying template files')+chalk.white.dim('   |  Just a moment'),
+        successText: chalk.white.bold('🟩⬜⬜⬜  Copied template files'),
+        failText: chalk.white.bold('🟥⬜⬜⬜  Failed to copy template files  |  Development environment will not function'),
+      }
+    )
+  } catch (err) { /* no feedback here */ }
 
   // Install dependencies
-  await oraPromise(
-    installDependencies(config, choices),
-    chalk.white.bold('Installing dependencies')+chalk.white.dim(' (This will take a while)')
-  )
+  try {
+    await oraPromise(
+      installDependencies(config, choices),
+      {
+        text: chalk.white.bold('🟩🟨⬜⬜  Installing dependencies')+chalk.white.dim('  |  Please wait, this will take a while'),
+        successText: chalk.white.bold('🟩🟩⬜⬜  Installed dependencies'),
+        failText: chalk.white.bold('🟩🟥⬜⬜  Failed to install dependencies  |  Development environment will not function'),
+      }
+    )
+  } catch (err) { /* no feedback here */ }
 
   // Fetch web components
-  await oraPromise(
-    downloadLabFiles(config),
-    chalk.white.bold('Downloading web components')+chalk.white.dim(' (This too will take a while)')
-  )
+  try {
+    await oraPromise(
+      downloadLabFiles(config),
+      {
+        text: chalk.white.bold('🟩🟩🟨⬜  Downloading web components')+chalk.white.dim('  |  Almost there'),
+        successText: chalk.white.bold('🟩🟩🟩⬜  Downloaded web components'),
+        failText: chalk.white.bold('🟩🟩🟥⬜  Failed to download web components  |  Development environment will not function'),
+      }
+    )
+  } catch (err) { /* no feedback here */ }
 
+  // Initialize git repository
+  try {
+    await oraPromise(
+      initGitRepo(config, choices),
+      {
+        text: chalk.white.bold('🟩🟩🟩⬜  Initializing git repository')+chalk.white.dim('  |  You have git, right?'),
+        successText: chalk.white.bold('🟩🟩🟩🟩  Initialized git repository'),
+        failText: chalk.white.bold('🟩🟩🟩🟥  Failed to initialize git repository')+chalk.white.dim('  |  This does not stop you from developing your design'),
+      }
+    )
+  } catch (err) { /* no git no worries */ }
+
+  // All done. Show tips
+  showTips(config, choices)
 }
 
-//const handlebars = require('handlebars')
-//const execa = require('execa')
-//const fs = require('fs')
-//const globby = require('globby')
-//const normalize = require('normalize-path')
-//const mkdirp = require('make-dir')
-//const ora = require('ora')
-//const pEachSeries = require('p-each-series')
-
-//const pkg = require('../package')
-/*
-const templateBlacklist = new Set([path.join('example', 'public', 'favicon.ico')])
-
-module.exports = async (info) => {
-
-
-
-
-
-  if (git) {
-    const promise = module.exports.initGitRepo({ dest })
-    ora.promise(promise, 'Initializing git repo')
-    await promise
-  }
-
-
-  return dest
-}
-
-module.exports.initGitRepo = async (opts) => {
-  const { dest } = opts
-
-  const gitIgnorePath = path.join(dest, '.gitignore')
-  fs.writeFileSync(
-    gitIgnorePath,
-    `
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
-# dependencies
-node_modules
-
-# builds
-build
-dist
-.rpt2_cache
-
-# misc
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-`,
-    'utf8'
-  )
-
-  const cmd = `git init && git add . && git commit -m ":tada: Initialized ${pkg.name}@${pkg.version} with create-freesewing-pattern"`
-  return execa.sync(cmd, { cwd: dest, shell: true })
-}
-
-*/

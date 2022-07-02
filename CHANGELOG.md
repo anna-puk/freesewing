@@ -3,11 +3,71 @@
 
 ## Unreleased
 
+
+## 2.21.3 (2022-07-03)
+
+### core
+
+#### Changed
+
+ - Make generatePartTransform a named export
+
+### new-design
+
+#### Changed
+
+ - We're now loading content from the main branch by default
+
+#### Fixed
+
+ - Add bin entry to package.json
+
+
+## 2.21.2 (2022-06-30)
+
+### simon
+
+#### Changed
+
+ - Decreased default collar ease
+ - Increased default yoke height
+
+### simone
+
+#### Changed
+
+ - Decreased default collar ease
+ - Increased default yoke height
+
+### ursula
+
+#### Added
+
+ - Added markers for elastics
+
+
+## 2.21.1 (2022-06-28)
+
+### pattern-info
+
+#### Fixed
+
+ - Added Noble to the list
+
+
+## 2.21.0 (2022-06-27)
+
 ### benjamin
 
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+
+### bob
+
+#### Added
+
+ - Bob is a pattern for a bib, the same one that's used in our design tutorial
 
 ### florence
 
@@ -20,6 +80,12 @@
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+
+### hi
+
+#### Added
+
+ - Hi is a new desing for a shark plushy
 
 ### holmes
 
@@ -62,6 +128,13 @@
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+ - Slightly increased the default neck ease
+
+### noble
+
+#### Added
+
+ - Noble is a body block with prince(ss) seams
 
 ### titan
 
@@ -153,6 +226,10 @@
 
 ### lucy
 
+#### Added
+
+ - Lucy is a pattern for a historical tie-on pocket
+
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
@@ -192,6 +269,8 @@
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+ - More accurately determine the cuff width
+ - Corrected the hide() signature in the config
 
 #### Fixed
 
@@ -202,6 +281,7 @@
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+ - More accurately determine the cuff width
 
 #### Fixed
 
@@ -242,6 +322,12 @@
 
  - Migrated from Rollup to Esbuild for all builds
 
+### unice
+
+#### Added
+
+ - Unice is an underwear pattern
+
 ### ursula
 
 #### Changed
@@ -253,6 +339,10 @@
 #### Changed
 
  - Migrated from Rollup to Esbuild for all builds
+
+#### Fixed
+
+ - Change hem allowance to standard SA
 
 ### walburga
 
@@ -464,6 +554,12 @@
 
  - Migrated from Rollup to Esbuild for all builds
  - The `pctBasedOn()` helper method for pattern config was moved to config-helpers We did not make this a breaking change since it's only used internally.
+
+### create-freesewing-pattern
+
+#### Deprecated
+
+ - This package is deprecated. Please use `npx @freesewing/new-design`
 
 ### gatsby-remark-jargon
 

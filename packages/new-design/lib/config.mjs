@@ -1,7 +1,8 @@
 export const config = {
   node: 14, // Minimum node version
-  repo: 'freesewing/freesewing', // Repository to download from
-  branch: 'develop', // Branch to download from
+  fileUri: 'https://raw.githubusercontent.com',
+  repo: process.env.FS_REPO || 'freesewing/freesewing', // Repository to download from
+  branch: process.env.FS_BRANCH || 'main', // Branch to download from
   i18n: [
     'account',
     'common',
@@ -32,6 +33,7 @@ export const config = {
       "shared/config/postcss.config.js",
       "shared/config/tailwind.config.js",
       "shared/prebuild/contributors.mjs",
+      "shared/hooks/useGist.js",
       "shared/hooks/useLocalStorage.js",
       "shared/hooks/useTheme.js",
       "shared/styles/code.css",
@@ -52,6 +54,7 @@ export const config = {
       "shared/components/page-link.js",
       "shared/components/pinked-ribbon.js",
       "shared/components/popout.js",
+      "shared/components/raw-span.js",
       "shared/components/theme-picker.js",
       "shared/components/web-link.js",
       "shared/components/yaml.js",
@@ -106,6 +109,7 @@ export const config = {
       "shared/components/logos/osi.js",
       "shared/components/navigation/aside.js",
       "shared/components/navigation/primary.js",
+      "shared/components/picker.js",
       "shared/components/robot/index.js",
       "shared/components/robot/poses.js",
       "shared/components/wrappers/img.js",
@@ -140,7 +144,8 @@ export const config = {
       "shared/components/workbench/draft/svg/index.js",
       "shared/components/workbench/draft/text/index.js",
       "shared/components/workbench/draft/text-on-path/index.js",
-      "shared/components/workbench/layout/draft.js",
+      "shared/components/workbench/layout/draft/index.js",
+      "shared/components/workbench/layout/draft/part.js",
       "shared/components/workbench/layout/cut/index.js",
       "shared/components/workbench/layout/cut/settings.js",
       "shared/components/workbench/layout/print/index.js",
@@ -187,5 +192,27 @@ export const config = {
         to: 'shared/config/measurements.mjs'
       }
     ],
-  }
+  },
+  gitignore: `
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+
+# builds
+dist
+.next
+
+# misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+`,
 }

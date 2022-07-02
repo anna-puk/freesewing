@@ -1,6 +1,6 @@
 {
   "name": "@freesewing/new-design",
-  "version": "2.21.0-rc.1",
+  "version": "2.21.3",
   "description": "Initializer package for a new FreeSewing design: npx @freesewing/new-design",
   "author": "Joost De Cock <joost@joost.at> (https://github.com/joostdecock)",
   "homepage": "https://freesewing.org/",
@@ -18,18 +18,24 @@
     "freesewing"
   ],
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "scripts": {
-    "build": "node build.js",
+    "build": "SITE=new-design/shared node ../../sites/shared/prebuild/i18n-only.mjs && cp ../../scripts/banner.mjs ./lib && node build.js",
     "clean": "rimraf dist",
     "symlink": "mkdir -p ./node_modules/@freesewing && cd ./node_modules/@freesewing && ln -s -f ../../../* . && cd -",
     "lab": "cd ../../sites/lab && yarn start",
     "tips": "node ../../scripts/help.mjs",
-    "prebuild": "SITE=new-design/shared node ../../sites/shared/prebuild/i18n-only.mjs",
-    "cibuild_step6": "node build.js"
+    "cibuild_step6": "SITE=new-design/shared node ../../sites/shared/prebuild/i18n-only.mjs && cp ../../scripts/banner.mjs ./lib && node build.js"
   },
   "peerDependencies": {},
-  "dependencies": {},
+  "dependencies": {
+    "axios": "^0.27.2",
+    "chalk": "^5.0.1",
+    "execa": "^6.1.0",
+    "mustache": "^4.2.0",
+    "ora": "^6.1.0",
+    "prompts": "^2.4.2",
+    "recursive-readdir": "^2.2.2"
+  },
   "devDependencies": {},
   "files": [
     "README.md",
@@ -43,13 +49,13 @@
   ],
   "publishConfig": {
     "access": "public",
-    "tag": "next"
+    "tag": "latest"
   },
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6"
   },
   "bin": {
-    "@freesewing/new-design": "index.mjs"
+    "new-design": "dist/index.js"
   }
 }
