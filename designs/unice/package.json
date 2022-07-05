@@ -31,7 +31,7 @@
     "clean": "rimraf dist",
     "mbuild": "NO_MINIFY=1 node build.js",
     "symlink": "mkdir -p ./node_modules/@freesewing && cd ./node_modules/@freesewing && ln -s -f ../../../* . && cd -",
-    "test": "BABEL_ENV=production npx mocha tests/*.test.mjs --require @babel/register",
+    "test": "set BABEL_ENV=production npx mocha tests/*.test.mjs --require @babel/register",
     "vbuild": "VERBOSE=1 node build.js",
     "lab": "cd ../../sites/lab && yarn start",
     "tips": "node ../../scripts/help.mjs",
