@@ -42,10 +42,10 @@ export default function (part) {
     console.log('width',gussetWidthFront)
     
     let horShift
-      horShift = (actualGussetLength/gussetWidthFront > 1.2)
+      horShift = (actualGussetLength/gussetWidthFront > 1.5)
       ? 0.1*gussetWidthFront/backExposureThreshold
-      : 0.1*gussetWidthFront/(backExposureThreshold * actualGussetLength/(1.2*gussetWidthFront))
-      // TODO: make this work
+      : 0.1*actualGussetLength/(1.5 * backExposureThreshold)
+    console.log('shift',horShift)
     points.gussetCp1 = points.frontGussetLeft
       .shift(270,0.3*actualGussetLength) // shift to same height as for high back exposure
       .shift(0, horShift)    
