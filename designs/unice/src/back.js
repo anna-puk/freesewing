@@ -19,7 +19,6 @@ export default function (part) {
   // Design pattern here
 
   // Create points
-return part
   points.backWaistMid = new Point(measurements.seat / 4, 0)
   points.backWaistBandLeft = new Point(
     store.get('sideSeamWaist').x / options.backToFrontWidth,

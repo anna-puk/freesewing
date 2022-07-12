@@ -1,7 +1,7 @@
 export default function (part) {
   let { options, Point, Path, points, paths, measurements, store, complete, sa, paperless, macro } =
     part.shorthand()
-return part
+
   var yScaleDoubleLayer
   yScaleDoubleLayer = (1 + store.get('yScale'))/2 // double layer of fabric stretches half as much
 
