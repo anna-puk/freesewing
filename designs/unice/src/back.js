@@ -42,7 +42,7 @@ export default function (part) {
   const backHeightReduced = backHeightBelow + backHeightAbove
 
   points.backGussetLeft = new Point(
-    measurements.seat / 4 - (measurements.waistToSeat * options.gussetWidth * store.get('xScaleReduced')) * 2.2 / options.gussetRatio,
+    measurements.seat / 4 - (measurements.waistToUpperLeg * options.gussetWidth * store.get('xScaleReduced')) * 1.9 / options.gussetRatio,
     backHeightReduced
   )
   points.backGussetMid = new Point(
