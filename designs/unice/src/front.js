@@ -158,6 +158,19 @@ export default function (part) {
   )
   points.frontGussetMid = new Point(measurements.seat / 4, frontHeightReduced)
 
+  // Store points for use in other parts
+
+  /* Store side seam points for use in back */
+  // NOTE: do this *before* converting the dip to a curve
+  
+  store.set('sideSeamWaist', points.frontWaistBandLeft)
+  store.set('sideSeamHip', points.frontLegOpeningLeft)
+
+  /* Store gusset points for use in gusset */
+
+  store.set('frontGussetLeft', points.frontGussetLeft)
+  store.set('frontGussetMid', points.frontGussetMid)
+ 
   // Create control points
 
   /* Control points for leg opening curves */
@@ -212,6 +225,9 @@ export default function (part) {
   points.frontGussetRightCp1 = points.frontGussetLeftCp1.flipX(points.frontWaistMid)
   points.frontLegOpeningRightCp1 = points.frontLegOpeningLeftCp1.flipX(points.frontWaistMid)
   points.frontWaistBandRightCp1 = points.frontWaistBandLeftCp1.flipX(points.frontWaistMid)
+  
+  // store frontGussetRight
+  store.set('frontGussetRight', points.frontGussetRight)
 
   /* Middle point for label */
   points.frontMidMid = points.frontLegOpeningLeft.shiftFractionTowards(
@@ -233,19 +249,6 @@ export default function (part) {
     .curve(points.frontWaistBandRight, points.frontWaistBandRightCp1, points.frontWaistBandMid) // Waist band dip
     .close()
     .attr('class', 'fabric')
-
-  // Store points for use in other parts
-
-  /* Store side seam points for use in back */
-
-  store.set('sideSeamWaist', points.frontWaistBandLeft)
-  store.set('sideSeamHip', points.frontLegOpeningLeft)
-
-  /* Store gusset points for use in gusset */
-
-  store.set('frontGussetLeft', points.frontGussetLeft)
-  store.set('frontGussetRight', points.frontGussetRight)
-  store.set('frontGussetMid', points.frontGussetMid)
 
   /* Store lengths for use in elastic */
 
