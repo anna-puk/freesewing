@@ -143,7 +143,7 @@ export default function (part) {
   
   // calculate the actual front height, using yScale above and yScaleReduced below leg opening
   store.set('frontHeightAbove',points.frontWaistLeft.dy(points.frontLegOpeningLeft))
-  // NOTE: if options.frontCurve > 0, this will be adjusted further later on
+  // NOTE: if options.frontCurve > 0, this ought to be adjusted further later on
 
   var frontHeightBelow
   frontHeightBelow = store.get('yScale')*(store.get('frontHeight') - store.get('frontHeightAbove')/store.get('yScaleReduced'))
