@@ -78,9 +78,9 @@ const Buttons = ({ transform, flip, rotate, setRotate, resetPart }) => {
 }
 
 const Part = props => {
-  const { layout, name, part} = props
+  const { layout, part, partName} = props
 
-  const partLayout = layout.parts?.[name]
+  const partLayout = layout.parts?.[partName]
 
   // Don't just assume this makes sense
   if (typeof partLayout?.move?.x === 'undefined') return null
@@ -94,11 +94,12 @@ const Part = props => {
 
   // update the layout on mount
   useEffect(() => {
-    if (partRef.current) updateLayout()
+    if (partRef.current) updateLayout(false)
   }, [partRef])
 
   // Initialize drag handler
   useEffect(() => {
+    if (!partRef.current) {return}
     handleDrag(select(partRef.current))
   }, [rotate, layout])
 
@@ -163,10 +164,11 @@ const Part = props => {
     updateLayout()
   }
   const toggleDragRotate = () => {
+    if (!partRef.current) {return}
     updateLayout()
     setRotate(!rotate)
   }
-  const updateLayout = () => {
+  const updateLayout = (history=true) => {
     const partRect = partRef.current.getBoundingClientRect();
     const matrix = partRef.current.ownerSVGElement.getScreenCTM().inverse();
 
@@ -176,7 +178,7 @@ const Part = props => {
     const tl = domToSvg({x: partRect.left, y: partRect.top});
     const br = domToSvg({x: partRect.right, y: partRect.bottom});
 
-    props.updateLayout(name, {
+    props.updateLayout(partName, {
       move: {
         x: translateX,
         y: translateY,
@@ -186,7 +188,7 @@ const Part = props => {
       flipY,
       tl,
       br
-    })
+    }, history)
   }
 
   // Method to flip (mirror) the part along the X or Y axis
@@ -199,13 +201,13 @@ const Part = props => {
   return (
     <g
       {...getProps(part)}
-      id={`part-${name}`}
-      ref={props.name === 'pages' ? null : partRef}
+      id={`part-${partName}`}
+      ref={partName === 'pages' ? null : partRef}
       onClick={toggleDragRotate}
       transform-origin={`${center.x} ${center.y}`}
     >
       {PartInner(props)}
-      {props.name !== 'pages' && <>
+      {partName !== 'pages' && <>
       <text x={center.x} y={center.y} ref={centerRef} />
       <rect
         x={part.topLeft.x}
