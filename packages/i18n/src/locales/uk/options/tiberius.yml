@@ -1,0 +1,39 @@
+---
+headRatio:
+  title: Ширина горловини
+  description: Керує шириною пройми для голови
+armholeDrop:
+  title: Спуск пройми
+  description: Керує глибиною/довжиною пройми для руки
+lengthBonus:
+  title: Додаткова довжина
+  description: Дозволяє керувати загальною довжиною виробу
+widthBonus:
+  title: Додаткова ширина
+  description: Дозволяє керувати загальною шириною виробу
+clavi:
+  title: Клав
+  description: Whether or not to include guides for clavi
+clavusLocation:
+  title: Clavus location
+  description: Controls the location of the clavi
+clavusWidth:
+  title: Clavus width
+  description: Controls the width of the clavi
+length:
+  title: Length
+  description: Controls the length of the garment
+  options:
+    toKnee: On the knee
+    toMidLeg: On the thigh
+    toFloor: To the floor
+width:
+  title: Width
+  description: Controls the width of the garment
+  options:
+    toElbow: To the elbow
+    toShoulder: To the shoulder
+    toMidArm: To the upper arm
+forceWidth:
+  title: Force width
+  description: Apply width settings regardless of constraints

@@ -1,41 +1,16 @@
-// This file is auto-generated.
-// Changes you make will be overwritten.
-import chai from 'chai'
-import models from '@freesewing/models'
-import patterns from '@freesewing/pattern-info'
-import Paco from './dist/index.mjs'
+// This file is auto-generated | Any changes you make will be overwritten.
+import { Paco } from './dist/index.mjs'
 
 // Shared tests
-import { testPatternConfig } from '../../../tests/patterns/config.mjs'
-import { testPatternDrafting } from '../../../tests/patterns/drafting.mjs'
-import { testPatternSampling } from '../../../tests/patterns/sampling.mjs'
-
-const expect = chai.expect
-
+import { testPatternConfig } from '../../../tests/designs/config.mjs'
+import { testPatternDrafting } from '../../../tests/designs/drafting.mjs'
+//import { testPatternSampling } from '../../../tests/designs/sampling.mjs'
 
 // Test config
-testPatternConfig(
-  'paco',
-  new Paco(),
-  expect,
-  models,
-  patterns
-)
+testPatternConfig(Paco)
 
-// Test drafting
-testPatternDrafting(
-  'paco',
-  Paco,
-  expect,
-  models,
-  patterns
-)
+// Test drafting - Change the second parameter to `true` to log errors
+testPatternDrafting(Paco, false)
 
-// Test sampling
-testPatternSampling(
-  'paco',
-  Paco,
-  expect,
-  models,
-  patterns
-)
+// Test sampling - Change the second parameter to `true` to log errors
+//testPatternSampling(Paco, false)

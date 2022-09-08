@@ -61,6 +61,7 @@ svg.freesewing.pattern {
   .bold { font-weight: bold; }
 
   .center { text-anchor: middle; }
+  .baseline-center {dominant-baseline: central;}
   .right { text-anchor: end; }
 
   /* muted page numbers */
@@ -84,10 +85,13 @@ svg.freesewing.pattern {
   }
   .svg-layout-button > rect.button {
     fill: var(--pattern-note);
-    fill-opacity: 0.3;
+    fill-opacity: 0.5;
     stroke: none;
   }
-  .svg-layout-button:hover > rect {
+  .svg-layout-button path {
+    stroke-width: calc(var(--pattern-stroke) * 2 * var(--pattern-scale));;
+  }
+  .svg-layout-button:hover > rect.button {
     fill: var(--pattern-lining);
     stroke: none;
     fill-opacity: 1;
@@ -161,7 +165,6 @@ svg.freesewing.pattern {
  * This is for styling FreeSewing snippets
  * TODO: Update snippets to use inline styles with CSS vars
  */
-g#buttonhole path.note,
 g#notch circle.note,
 g#bnotch path.note,
 g#bnotch circle.note {
@@ -170,6 +173,14 @@ g#bnotch circle.note {
  }
 g#notch circle.fill-note,
 g#bnotch circle.fill-note { fill: var(--pattern-note); }
+g#button circle.mark { stroke: var(--pattern-mark); fill: none; }
+g#button circle.fill-mark { fill: var(--pattern-mark); }
+g#button circle.no-stroke { stroke: none; }
+g#buttonhole path.mark,
+g#buttonhole-start path.mark,
+g#buttonhole-end path.mark {
+  fill: none; stroke: var(--pattern-mark);
+}
 
 /* Same for paperless grid, also in shadow DOM */
 rect.grid {

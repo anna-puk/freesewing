@@ -41,6 +41,7 @@ Darts are used to compensate for the difference between your waist and seat meas
 We're not going to go into a full explanation on how to create all the individual details
 that make up a pencil skirt. These instructions assume that you know how to sew a dart, insert an invisible
 zipper, make a vent, etc. If not, there are numerous excellent articles available on the
+web, both in writen form, and on video. If not, there are numerous excellent articles available on the
 web, both in writen form, and on video. If you do get stuck, you can always reach out to
 [other FreeSewers](https://discord.freesewing.org/) in our discord.
 
@@ -104,7 +105,7 @@ If you prefer to insert the zipper with the main and lining fabric as one, you w
 
 <Note>
 
-Alternatively you can _Edgestitch_ the waistband in place which will admit the need to hand-stitch the gap closed but this will leave visible stitching.\
+Alternatively you can _Edgestitch_ the waistband in place which will admit the need to hand-stitch the gap closed but this will leave visible stitching.  
 The closure can be a button and buttonhole, snaps or simple dress hooks. It's really up to you.
 
 </Note>

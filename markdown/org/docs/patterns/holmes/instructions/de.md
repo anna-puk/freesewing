@@ -61,7 +61,7 @@ If you are uncertain about the length you want for you ties take 1 metre (39") o
 
 <Note>
 
-The lengths above are recommendations so feel free to go as long or as short as you like with the ties.\
+The lengths above are recommendations so feel free to go as long or as short as you like with the ties.  
 If you prefer you can make your custom ties with fabric, [see Holmes cutting](/docs/patterns/holmes/cutting/) for more info.
 
 </Note>
@@ -188,7 +188,7 @@ If you are having trouble dealing with the curves of the visors, sew a stitching
 
 **For both Assembly and Lining Methods**
 
-Assembly and Lining instructions are written with a 6 panelled Holmes in mind. Sie können feststellen, dass die Platzierung von Visoren und Ohrklappenteilen für andere nummerierte Holmes unterschiedlich ist. As a rule of thumb generally the centre front of the visor is always on the centre crown seam so go from there if struggling.
+Assembly and Lining instructions are written with a 6 panelled Holmes in mind. Sie können feststellen, dass die Platzierung von Visoren und Ohrklappenteilen für andere nummerierte Holmes unterschiedlich ist. Sie können feststellen, dass die Platzierung von Visoren und Ohrklappenteilen für andere nummerierte Holmes unterschiedlich ist. As a rule of thumb generally the centre front of the visor is always on the centre crown seam so go from there if struggling.
 
 </Warning>
 
@@ -236,7 +236,7 @@ Das war's! Sie sind fertig. Genießen Sie jetzt die Welt in Ihrem wunderbaren ne
 
 <Note>
 
-Remember these instructions are just guidelines so don't worry if you want to construct the hat differently.\
+Remember these instructions are just guidelines so don't worry if you want to construct the hat differently.  
 The Diagrams are yet to be made for this pattern so in the mean time if you need a visual aid, watch the YouTube video that inspired this pattern:
 
 </Note>

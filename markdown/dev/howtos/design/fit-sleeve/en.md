@@ -8,12 +8,12 @@ about: Shows how to adapt the length of the sleevecap to fit your armhole
 
 ##### See this example in our source code
 
-- [packages/bent/src/sleeve.js](https://github.com/freesewing/freesewing/blob/develop/packages/bent/src/sleeve.js)
+- [designs/bent/src/sleeve.js](https://github.com/freesewing/freesewing/blob/develop/designs/bent/src/sleeve.js)
 
 </Note>
 
 Fitting the sleevecap to the armhole means that we need to make sure the length
-of the seams match.\
+of the seams match.  
 A similar challenge is to fit the collar to the neck opening and so on.
 
 For all of these situations where you have to create curved seams with matching

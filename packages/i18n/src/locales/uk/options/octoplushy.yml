@@ -1,0 +1,28 @@
+size:
+  title: Розмір
+  description: Керує загальним розміром
+type:
+  title: Тип
+  description: Дозволяє обрати один з варіантів цього дизайну
+armWidth:
+  title: Ширина мацальця
+  description: Керує шириною окремих мацальців (щупальців)
+armLength:
+  title: Довжина мацальця
+  description: Керує довжиною окремих мацальців (щупальців)
+neckWidth:
+  title: Ширина шиї
+  description: Керує шириною шиї (місця між головою та мацальцями)
+armTaper:
+  title: Звуження мацальця
+  description: Керує звуженням мацальців до краю
+bottomTopArmRatio:
+  title: Співвідношення верху/низу мацальця
+  description: "Я й гадки не маю, що воно робить"
+bottomArmReduction:
+  title: Зменшення низу мацальця
+  description: "Я й гадки не маю, що воно робить"
+bottomArmReductionPlushy:
+  title: Зменшення низу мацальця (іграшка)
+  description: "Я й гадки не маю, що воно робить"
+

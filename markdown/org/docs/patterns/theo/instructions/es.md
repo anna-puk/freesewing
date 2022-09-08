@@ -112,7 +112,7 @@ Esta parte superior estará siempre en el espectáculo, así que asegúrese de c
 </Tip>
 
 <Tip>
- 
+
 Para evitar que sus bolsillos salgan corriendo, puede colocar una pieza de cinta sin estirar entre el pliegue. Cuando se une, también se capturará esta cinta, evitando que el bolsillo salga.
 
 </Tip>
@@ -132,7 +132,7 @@ Zig-zag the edge of the folded-back front piece to finish it and secure it to th
 When you're done, place front piece, lining and pocket bag flat, and give it a good press.
 
 <Tip>
-  
+
 Puede que sea un buen momento para recordarles que cada paso hasta este punto tenía que hacerse por ambas piernas.
 
 Es sólo un recordatorio amistoso, los siguientes pasos deben hacerse también para ambas piernas.
@@ -164,9 +164,10 @@ When everything is pinned together, fold away the front piece and lining, and cl
 Sew to bottom curve of the pocket bag up until the point where it reached the side piece
 
 You can finish the pocket bag in a number of ways, including:
- - Serge the sides together
- - Finish the edge with bias tape
- - Sew the sides together and finish the edge with a zig-zag stitch
+
+- Serge the sides together
+- Finish the edge with bias tape
+- Sew the sides together and finish the edge with a zig-zag stitch
 
 </Tip>
 
@@ -219,7 +220,7 @@ Press open the seam allowance along the side seams. Do so from the back, and rep
 Take your time, making sure to use enough heat, but not too much. Use steam or spray on water for best effect.
 
 <Tip>
- 
+
 Una costura lateral plana agradable se ve grande, así que tómate tu tiempo para hacerlo bien.
 
 </Tip>
@@ -311,8 +312,7 @@ When you are done, remove your earlier perpendicular pins.
 
 ### Paso 21: Plegar sobre escudo de mosca y anclar abajo
 
-![FOld over fly shield and pin down](step21a.png) 
-![FOld over fly shield and pin down](step21b.png)
+![FOld over fly shield and pin down](step21a.png) ![FOld over fly shield and pin down](step21b.png)
 
 Flip everything over so that your fly shield lies at the bottom.
 
@@ -380,9 +380,7 @@ Give it a good press from the back.
 
 ### Paso 27: Anclar y coser zip para volar
 
-![Place both legs on top of eachother](step27a.png) 
-![Pin the zip along the edge](step27b.png) 
-![Sew in place](step27c.png) 
+![Place both legs on top of eachother](step27a.png) ![Pin the zip along the edge](step27b.png) ![Sew in place](step27c.png)
 
 Place the right leg down with the good side up. Place the leg on top of it with the good side down.
 
@@ -402,9 +400,9 @@ Last but not least, sew along the zip with your zipper foot to attach it to the 
 
 When aligning the zip, make sure to take the following into account:
 
- - The zip should be placed with the good side down
- - The zip should sit a bit back from the edge of your fly piece
- - Make sure to align the top of the zip with the other zip half on the right leg
+- The zip should be placed with the good side down
+- The zip should sit a bit back from the edge of your fly piece
+- Make sure to align the top of the zip with the other zip half on the right leg
 
 </Tip>
 
@@ -430,8 +428,7 @@ Si tu zip es demasiado largo, puedes recortarlo debajo de la barra-ataques.
 
 ### Paso 30: Únete a coberturas
 
-![Join crotch seam](step30a.png) 
-![Join crotch seam](step30b.png)
+![Join crotch seam](step30a.png) ![Join crotch seam](step30b.png)
 
 Place both fronts with the good sides up. They are now joined by the fly.
 
@@ -575,7 +572,7 @@ On one side of the waistband, end with a curve and then go down vertically along
 
 Before pressing the waistband, make sure to roll over the fabric around the edge of the interfacing.
 
-Remember that in the previous step your sewed 3mm from the interfacing edge? You need to make the fold around the edge of the interfacing so that the actual seam sits 3mm more inwards.
+Remember that in the previous step your sewed 3mm from the interfacing edge? Remember that in the previous step your sewed 3mm from the interfacing edge? You need to make the fold around the edge of the interfacing so that the actual seam sits 3mm more inwards.
 
 This will make sure that our lining fabric is never on display from the front of your trousers.
 
@@ -731,7 +728,7 @@ Siéntete libre de recortar la longitud de tus bucles de cinturón después de t
 Before we hem the trousers, finish the raw edge of the legs with a zig-zag stitch or serger.
 
 <Tip>
- 
+
 También sería un buen momento para probar con tus pantalones y marcar exactamente cuánto tiempo quieres que sean después de que se hemten.
 
 </Tip>
@@ -781,4 +778,3 @@ While there are machine alternatives, they aren't as neat (blind hem stitch) or 
 ### Paso 56: Recorte, limpia y presiona
 
 Trim any loose threads or basting that remains, and give your trousers a good final press.
-

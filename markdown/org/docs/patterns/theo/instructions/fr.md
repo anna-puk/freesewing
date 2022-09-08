@@ -112,7 +112,7 @@ Ce surpiqûre sera toujours montré, alors assurez-vous de correspondre à la co
 </Tip>
 
 <Tip>
- 
+
 Pour empêcher vos poches de se déposer, vous pouvez placer un morceau de ruban non étirant entre le pli. Lors de la broderie, vous attraperez également ce ruban, empêchant la poche de se déposer.
 
 </Tip>
@@ -132,7 +132,7 @@ Zig-zag the edge of the folded-back front piece to finish it and secure it to th
 When you're done, place front piece, lining and pocket bag flat, and give it a good press.
 
 <Tip>
-  
+
 Ce serait peut-être un bon moment pour vous rappeler que chaque étape devait être accomplie pour les deux jambes.
 
 C'est juste un rappel amical, les prochaines étapes doivent être faites pour les deux jambes aussi.
@@ -164,9 +164,10 @@ When everything is pinned together, fold away the front piece and lining, and cl
 Sew to bottom curve of the pocket bag up until the point where it reached the side piece
 
 You can finish the pocket bag in a number of ways, including:
- - Serge the sides together
- - Finish the edge with bias tape
- - Sew the sides together and finish the edge with a zig-zag stitch
+
+- Serge the sides together
+- Finish the edge with bias tape
+- Sew the sides together and finish the edge with a zig-zag stitch
 
 </Tip>
 
@@ -219,7 +220,7 @@ Press open the seam allowance along the side seams. Do so from the back, and rep
 Take your time, making sure to use enough heat, but not too much. Use steam or spray on water for best effect.
 
 <Tip>
- 
+
 Une belle couture de côté plat a l'air superbe, alors prenez votre temps pour la régler.
 
 </Tip>
@@ -311,8 +312,7 @@ When you are done, remove your earlier perpendicular pins.
 
 ### Étape 21 : Plier sur le bouclier de la mouche et épingler vers le bas
 
-![FOld over fly shield and pin down](step21a.png)
-![FOld over fly shield and pin down](step21b.png)
+![FOld over fly shield and pin down](step21a.png) ![FOld over fly shield and pin down](step21b.png)
 
 Flip everything over so that your fly shield lies at the bottom.
 
@@ -380,9 +380,7 @@ Give it a good press from the back.
 
 ### Étape 27: Épingler et coudre le zip à la pièce de vol
 
-![Place both legs on top of eachother](step27a.png)
-![Pin the zip along the edge](step27b.png) 
-![Sew in place](step27c.png) 
+![Place both legs on top of eachother](step27a.png) ![Pin the zip along the edge](step27b.png) ![Sew in place](step27c.png)
 
 Place the right leg down with the good side up. Place the leg on top of it with the good side down.
 
@@ -402,9 +400,9 @@ Last but not least, sew along the zip with your zipper foot to attach it to the 
 
 When aligning the zip, make sure to take the following into account:
 
- - The zip should be placed with the good side down
- - The zip should sit a bit back from the edge of your fly piece
- - Make sure to align the top of the zip with the other zip half on the right leg
+- The zip should be placed with the good side down
+- The zip should sit a bit back from the edge of your fly piece
+- Make sure to align the top of the zip with the other zip half on the right leg
 
 </Tip>
 
@@ -430,8 +428,7 @@ Si votre zip est trop long, vous pouvez le couper en dessous de la barre.
 
 ### Étape 30: Joindre la couture de crotch
 
-![Join crotch seam](step30a.png)
-![Join crotch seam](step30b.png) 
+![Join crotch seam](step30a.png) ![Join crotch seam](step30b.png)
 
 Place both fronts with the good sides up. They are now joined by the fly.
 
@@ -731,7 +728,7 @@ N’hésitez pas à couper la longueur des boucles de votre ceinture après avoi
 Before we hem the trousers, finish the raw edge of the legs with a zig-zag stitch or serger.
 
 <Tip>
- 
+
 Ce serait également un bon moment pour essayer votre pantalon et marquer exactement combien de temps vous voulez qu'il soit après qu'ils soient enserrés.
 
 </Tip>
@@ -781,4 +778,3 @@ While there are machine alternatives, they aren't as neat (blind hem stitch) or 
 ### Étape 56 : Couper, nettoyer et appuyer sur
 
 Trim any loose threads or basting that remains, and give your trousers a good final press.
-

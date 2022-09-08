@@ -19,7 +19,7 @@ Blocks are typically not made as-is but rather serve as a basis for other patter
 - Close the back darts.
 - Sew the front to the backs at the shoulders _good sides together_.
 - Matching notches, sew the sleeves to the shoulder _good sides together_.
-- Sew the side seams *good sides together*.
+- Sew the side seams _good sides together_.
 
 <Note>
 
@@ -51,7 +51,7 @@ Sometimes you may need to wear the mock-up for an extended amount of time to get
 
 <Note>
 
-Remember to treat Breanna as a basis rather than a final product, so adjust what you need to get the desired look.\
+Remember to treat Breanna as a basis rather than a final product, so adjust what you need to get the desired look.  
 For instance:
 
 - Change the neck line

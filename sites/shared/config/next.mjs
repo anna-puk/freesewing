@@ -1,13 +1,6 @@
 import path from 'path'
-import { readdirSync } from 'fs'
 import remarkGfm from 'remark-gfm'
-import { designs, plugins, packages } from '../../../config/software/index.mjs'
-
-const getDirectories = source =>
-  readdirSync(source, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
-const pkgs = getDirectories(path.resolve(`../`))
+import { designs, plugins } from '../../../config/software/index.mjs'
 
 /*
  * This mehthod will return the NextJS configuration
@@ -82,15 +75,15 @@ const config = (site, remarkPlugins=[]) => ({
 
     // Load designs from source, rather than compiled package
     for (const design in designs) {
-      config.resolve.alias[`@freesewing/${design}$`] = path.resolve(`../../designs/${design}/src/index.js`)
+      config.resolve.alias[`@freesewing/${design}$`] = path.resolve(`../../designs/${design}/src/index.mjs`)
     }
     // Load plugins from source, rather than compiled package
     for (const plugin in plugins) {
-      config.resolve.alias[`@freesewing/${plugin}$`] = path.resolve(`../../plugins/${plugin}/src/index.js`)
+      config.resolve.alias[`@freesewing/${plugin}$`] = path.resolve(`../../plugins/${plugin}/src/index.mjs`)
     }
     // Load these from source, rather than compiled package
     for (const pkg of ['core', 'config-helpers', 'i18n', 'models']) {
-      config.resolve.alias[`@freesewing/${pkg}$`] = path.resolve(`../../packages/${pkg}/src/index.js`)
+      config.resolve.alias[`@freesewing/${pkg}$`] = path.resolve(`../../packages/${pkg}/src/index.mjs`)
     }
 
     return config

@@ -14,13 +14,13 @@ los bordes crudos.
 Para estas instrucciones, asumiremos que está usando un serger para que finalice la costura, pero también proporcionaremos
 alternativas. Otras opciones para terminar costuras incluyen traparlos con fragmentos de color
 , enrollar un zig-zag a lo largo del borde de la costura para evitar que se descongele, o enlazar con
-cinta de sesgo. 
+cinta de sesgo.
 
 </Tip>
 
 ## Paso 1: Construir los bolsillos de respaldo
 
-Are you planning to insert welt pockets in the back of your Paco pants? Is so, awesome! This is arguably the trickiest part, and we'll accomplish it first. If not, you can skip ahead to the next step, preparing the front pockets.
+Are you planning to insert welt pockets in the back of your Paco pants? Is so, awesome! Is so, awesome! This is arguably the trickiest part, and we'll accomplish it first. If not, you can skip ahead to the next step, preparing the front pockets.
 
 Construct the welt pockets at the back of your trousers, including the pocket bag.
 

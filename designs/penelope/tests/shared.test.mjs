@@ -1,41 +1,16 @@
-// This file is auto-generated.
-// Changes you make will be overwritten.
-import chai from 'chai'
-import models from '@freesewing/models'
-import patterns from '@freesewing/pattern-info'
-import Penelope from './dist/index.mjs'
+// This file is auto-generated | Any changes you make will be overwritten.
+import { Penelope } from './dist/index.mjs'
 
 // Shared tests
-import { testPatternConfig } from '../../../tests/patterns/config.mjs'
-import { testPatternDrafting } from '../../../tests/patterns/drafting.mjs'
-import { testPatternSampling } from '../../../tests/patterns/sampling.mjs'
-
-const expect = chai.expect
-
+import { testPatternConfig } from '../../../tests/designs/config.mjs'
+import { testPatternDrafting } from '../../../tests/designs/drafting.mjs'
+//import { testPatternSampling } from '../../../tests/designs/sampling.mjs'
 
 // Test config
-testPatternConfig(
-  'penelope',
-  new Penelope(),
-  expect,
-  models,
-  patterns
-)
+testPatternConfig(Penelope)
 
-// Test drafting
-testPatternDrafting(
-  'penelope',
-  Penelope,
-  expect,
-  models,
-  patterns
-)
+// Test drafting - Change the second parameter to `true` to log errors
+testPatternDrafting(Penelope, false)
 
-// Test sampling
-testPatternSampling(
-  'penelope',
-  Penelope,
-  expect,
-  models,
-  patterns
-)
+// Test sampling - Change the second parameter to `true` to log errors
+//testPatternSampling(Penelope, false)

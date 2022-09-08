@@ -4,14 +4,17 @@ import glob from 'glob'
 import yaml from 'js-yaml'
 import chalk from 'chalk'
 import mustache from 'mustache'
-import { capitalize } from '../sites/shared/utils.mjs'
-import conf from '../lerna.json'
+import conf from '../lerna.json' assert { type: 'json' }
 const { version } = conf
 import {
   publishedSoftware as software,
-  publishedTypes as types
+  publishedTypes as types,
+  designs,
+  plugins
 } from '../config/software/index.mjs'
 import { buildOrder } from '../config/build-order.mjs'
+import rootPackageJson from '../package.json' assert { type: 'json' }
+import { capitalize } from '../sites/shared/utils.mjs'
 
 // Working directory
 const cwd = process.cwd()
@@ -26,14 +29,17 @@ const repo = {
   badges: readConfigFile('badges.yaml'),
   scripts: readConfigFile('scripts.yaml'),
   changelog: readConfigFile('changelog.yaml'),
-  changetypes: ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
+  changetypes: ['Breaking', 'Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
   dependencies: readConfigFile('dependencies.yaml', { version }),
   exceptions: readConfigFile('exceptions.yaml'),
   templates: {
     pkg: readTemplateFile('package.dflt.json'),
+    data: readTemplateFile('data.dflt.mjs'),
     changelog: readTemplateFile('changelog.dflt.md'),
     readme: readTemplateFile('readme.dflt.md'),
-    build: readTemplateFile('build.dflt.js'),
+    build: readTemplateFile('build.dflt.mjs'),
+    designTests: readTemplateFile('design.test.mjs'),
+    pluginTests: readTemplateFile('plugin.test.mjs')
   },
   dirs: foldersByType(),
   contributors: fs.readFileSync(path.join(cwd, 'CONTRIBUTORS.md'), 'utf-8'),
@@ -61,7 +67,7 @@ log.write(chalk.blueBright('Validating configuration...'))
 if (validate()) log.write(chalk.green(" Done\n"))
 
 
-// Step 3: Generate package.json, README, and CHANGELOG
+// Step 3: Generate package.json, pkg.mjs, README, and CHANGELOG
 log.write(chalk.blueBright('Generating package-specific files...'))
 for (const pkg of Object.values(software)) {
   fs.writeFileSync(
@@ -69,37 +75,62 @@ for (const pkg of Object.values(software)) {
     JSON.stringify(packageJson(pkg), null, 2) + '\n'
   )
   fs.writeFileSync(
+    path.join(cwd, pkg.folder, pkg.name, 'data.mjs'),
+    mustache.render(repo.templates.data, { name: fullName(pkg.name), version })
+  )
+  fs.writeFileSync(
     path.join(cwd, pkg.folder, pkg.name, 'README.md'),
     readme(pkg)
   )
   if (repo.exceptions.customBuild.indexOf(pkg.name) === -1) {
     fs.writeFileSync(
-      path.join(cwd, pkg.folder, pkg.name, 'build.js'),
+      path.join(cwd, pkg.folder, pkg.name, 'build.mjs'),
       repo.templates.build
     )
   }
   fs.writeFileSync(
     path.join(cwd, pkg.folder, pkg.name, 'CHANGELOG.md'),
-    changelog(pkg, repo)
+    changelog(pkg)
   )
 }
-log.write(chalk.green(" All done\n"))
+log.write(chalk.green(" Done\n"))
 
-// Step 3: Generate overall CHANGELOG.md
+// Step 4: Generate overall CHANGELOG.md
 fs.writeFileSync(
   path.join(repo.path, 'CHANGELOG.md'),
-  changelog('global', repo)
+  changelog('global')
 )
 
+// Step 5: Generate build script for published software
+log.write(chalk.blueBright('Generating buildall node script...'))
+const buildSteps = buildOrder.map((step, i) => `lerna run cibuild_step${i}`);
+const buildAllCommand = buildSteps.join(' && ');
+const newRootPkgJson = {...rootPackageJson};
+newRootPkgJson.scripts.buildall = buildAllCommand;
+fs.writeFileSync(
+  path.join(repo.path, 'package.json'),
+  JSON.stringify(newRootPkgJson, null, 2) + '\n'
+)
+log.write(chalk.green(" Done\n"))
 
-
-// Step 6: Generate build script for published software
-
-// Step 7: Generate tests for designs and plugins
+// Step 6: Generate tests for designs and plugins
+for (const design in designs) {
+  fs.writeFileSync(
+    path.join(repo.path, 'designs', design, 'tests', 'shared.test.mjs'),
+    mustache.render(repo.templates.designTests, { name: design, Name: capitalize(design) })
+  )
+}
+for (const plugin in plugins) {
+  fs.writeFileSync(
+    path.join(repo.path, 'plugins', plugin, 'tests', 'shared.test.mjs'),
+    repo.templates.pluginTests,
+  )
+}
 
 
 
 // All done
+log.write(chalk.green(" All done\n"))
 process.exit()
 
 /*
@@ -190,9 +221,9 @@ function scripts(pkg) {
   }
 
   // Enforce build order by generating the cibuild_stepX scrips
-  let i = 0
-  for (const step in buildOrder) {
+  for (let step=0; step < buildOrder.length; step++) {
     if (buildOrder[step].indexOf(pkg.name) !== -1) {
+      if (runScripts.prebuild) runScripts[`precibuild_step${step}`] = runScripts.prebuild
       if (runScripts.build) runScripts[`cibuild_step${step}`] = runScripts.build
     }
   }
@@ -238,6 +269,10 @@ function packageJson(pkg) {
   }
   pkgConf.keywords = pkgConf.keywords.concat(keywords(pkg))
   pkgConf.scripts = scripts(pkg)
+  if (repo.exceptions.skipTests.indexOf(pkg.name) !== -1) {
+    pkgConf.scripts.test = `echo "skipping tests for ${pkg.name}"`
+    pkgConf.scripts.testci = `echo "skipping tests for ${pkg.name}"`
+  }
   pkgConf.dependencies = dependencies('_', pkg)
   pkgConf.devDependencies = dependencies('dev', pkg)
   pkgConf.peerDependencies = dependencies('peer', pkg)
@@ -329,7 +364,7 @@ function globalChangelog() {
     markup += '\n## ' + v
     if (v !== 'Unreleased') markup += ' (' + formatDate(changes.date) + ')'
     markup += '\n\n'
-    for (let pkg in software) {
+    for (let pkg of ['global', ...Object.keys(software)]) {
       let changed = false
       for (let type of repo.changetypes) {
         if (
@@ -362,15 +397,15 @@ function packageChangelog(pkgName) {
     let changes = repo.changelog[v]
     let changed = false
     for (let type of repo.changetypes) {
-      if (
-        typeof changes[type] !== 'undefined' &&
-        changes[type] !== null &&
-        typeof changes[type][pkgName] !== 'undefined' &&
-        changes[type][pkgName] !== null
-      ) {
+      if (changes[type] && (Array.isArray(changes[type][pkgName]) || Array.isArray(changes[type].all))) {
         if (!changed) changed = ''
         changed += '\n### ' + type + '\n\n'
-        for (let change of changes[type][pkgName]) changed += ' - ' + change + '\n'
+        if (Array.isArray(changes[type][pkgName])) {
+          for (let change of changes[type][pkgName]) changed += ' - ' + change + '\n'
+        }
+        if (Array.isArray(changes[type].all)) {
+          for (let change of changes[type].all) changed += ' - ' + change + '\n'
+        }
       }
     }
     if (v !== 'Unreleased' && changed) {
@@ -393,9 +428,9 @@ function packageChangelog(pkgName) {
 
 function formatDate(date) {
   let d = new Date(date),
-    month = '' + (d.getMonth() + 1),
-    day = '' + d.getDate(),
-    year = d.getFullYear()
+    month = '' + (d.getUTCMonth() + 1),
+    day = '' + d.getUTCDate(),
+    year = d.getUTCFullYear()
 
   if (month.length < 2) month = '0' + month
   if (day.length < 2) day = '0' + day
@@ -421,38 +456,3 @@ function validate() {
   return true
 }
 
-/**
- * Puts a package.json, build.js, README.md, and CHANGELOG.md
- * into every subdirectory under the packages directory.
- * Also adds unit tests for patterns, and writes the global CHANGELOG.md.
- */
-function reconfigure(pkgs, repo) {
-  for (const pkg of pkgs) {
-    console.log(chalk.blueBright(`Reconfiguring ${pkg}`))
-    //if (repo.exceptions.customPackageJson.indexOf(pkg) === -1) {
-    //  const pkgConfig = packageConfig(pkg, repo)
-    //  fs.writeFileSync(
-    //    path.join(repo.path, 'packages', pkg, 'package.json'),
-    //    JSON.stringify(pkgConfig, null, 2) + '\n'
-    //  )
-    //}
-    //if (repo.exceptions.customBuild.indexOf(pkg) === -1) {
-    //  fs.writeFileSync(
-    //    path.join(repo.path, 'packages', pkg, 'build.js'),
-    //    repo.templates.build
-    //  )
-    //}
-    //if (repo.exceptions.customReadme.indexOf(pkg) === -1) {
-    //  fs.writeFileSync(path.join(repo.path, 'packages', pkg, 'README.md'), readme(pkg, repo))
-    //}
-    if (repo.exceptions.customChangelog.indexOf(pkg) === -1) {
-      fs.writeFileSync(
-        path.join(repo.path, 'packages', pkg, 'CHANGELOG.md'),
-        changelog(pkg, repo)
-      )
-    }
-    const type = packageType(pkg, repo)
-  }
-  fs.writeFileSync(path.join(repo.path, 'CHANGELOG.md'), changelog('global', repo))
-  console.log(chalk.yellowBright.bold('All done.'))
-}

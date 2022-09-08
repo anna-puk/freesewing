@@ -1,9 +1,8 @@
-import { SizeMe } from 'react-sizeme'
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
-import svgattrPlugin from '@freesewing/plugin-svgattr'
+import { svgattrPlugin } from '@freesewing/plugin-svgattr'
 import { useTranslation } from 'next-i18next'
 
 const LabSample = ({ gist, draft }) => {
+
   const { t } = useTranslation(['workbench'])
   let svg
   let title = ''

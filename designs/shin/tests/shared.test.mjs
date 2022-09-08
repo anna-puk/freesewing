@@ -1,41 +1,16 @@
-// This file is auto-generated.
-// Changes you make will be overwritten.
-import chai from 'chai'
-import models from '@freesewing/models'
-import patterns from '@freesewing/pattern-info'
-import Shin from './dist/index.mjs'
+// This file is auto-generated | Any changes you make will be overwritten.
+import { Shin } from './dist/index.mjs'
 
 // Shared tests
-import { testPatternConfig } from '../../../tests/patterns/config.mjs'
-import { testPatternDrafting } from '../../../tests/patterns/drafting.mjs'
-import { testPatternSampling } from '../../../tests/patterns/sampling.mjs'
-
-const expect = chai.expect
-
+import { testPatternConfig } from '../../../tests/designs/config.mjs'
+import { testPatternDrafting } from '../../../tests/designs/drafting.mjs'
+//import { testPatternSampling } from '../../../tests/designs/sampling.mjs'
 
 // Test config
-testPatternConfig(
-  'shin',
-  new Shin(),
-  expect,
-  models,
-  patterns
-)
+testPatternConfig(Shin)
 
-// Test drafting
-testPatternDrafting(
-  'shin',
-  Shin,
-  expect,
-  models,
-  patterns
-)
+// Test drafting - Change the second parameter to `true` to log errors
+testPatternDrafting(Shin, false)
 
-// Test sampling
-testPatternSampling(
-  'shin',
-  Shin,
-  expect,
-  models,
-  patterns
-)
+// Test sampling - Change the second parameter to `true` to log errors
+//testPatternSampling(Shin, false)
