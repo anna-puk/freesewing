@@ -1,9 +1,17 @@
 import designs from "../../config/software/designs.json" assert { type: 'json' }
-import { adults, dolls, giants } from '@freesewing/models'
-import { getFamily } from './config.mjs'
+import { adult, doll, giant } from '@freesewing/models'
+import { getFamily, getShortName } from './config.mjs'
 import chai from 'chai'
 
 const expect = chai.expect
+
+const noSizes = [
+  'examples',
+  'rendertest',
+  'plugintest',
+  'legend',
+  'tutorial',
+]
 
 /*
  * This runs unit tests for pattern drafting
@@ -16,7 +24,7 @@ export const testPatternDrafting = (Pattern, log=false) => {
 
   const pattern = new Pattern()
   const config = pattern.getConfig()
-  const design = config.data.name
+  const design = getShortName(config.data.name)
   const family = getFamily(design)
   const parts = pattern.getPartList()
   // Helper method to try/catch pattern drafting
@@ -36,15 +44,16 @@ export const testPatternDrafting = (Pattern, log=false) => {
    * Draft pattern for different models
    */
   if (family !== 'utilities') {
-    describe('Draft for humans:', () => {
-      for (const type of ['sheher', 'hehim']) {
+    describe('Draft for humans:', function() {
+      this.timeout(5000);
+      for (const type of ['cisFemale', 'cisMale']) {
         describe(type, () => {
-          for (const size in adults[type]) {
+          for (const size in adult[type]) {
             it(`  - Drafting for size ${size}`, () => {
               expect(
                 doesItDraftAndRender(
                   new Pattern({
-                    measurements: adults[type][size]
+                    measurements: adult[type][size]
                   }), log
                 )
               ).to.equal(true)
@@ -54,11 +63,12 @@ export const testPatternDrafting = (Pattern, log=false) => {
       }
     })
 
-    // Do the same for fantastical models (dolls, giants)
-    const fams = { dolls, giants }
-    for (const family of ['dolls', 'giants']) {
-      describe(`Draft for ${family}:`, () => {
-        for (const type of ['sheher', 'hehim']) {
+    // Do the same for fantastical models (doll, giant)
+    const fams = { doll, giant }
+    for (const family of ['doll', 'giant']) {
+      describe(`Draft for ${family}:`, function() {
+        this.timeout(5000);
+        for (const type of ['cisFemale', 'cisMale']) {
           describe(type, () => {
             for (const size in fams[family][type]) {
               it(`  - Drafting at ${size}%`, () => {
@@ -75,6 +85,20 @@ export const testPatternDrafting = (Pattern, log=false) => {
         }
       })
     }
+  } else {
+    // Utility pattern - Just draft them once
+    // FIXME: This hangs when running all tests, not sure why
+    //it(`  - Draft utility pattern`, function() {
+    //  this.timeout(5000);
+    //  expect(
+    //    doesItDraftAndRender(
+    //      new Pattern({
+    //        measurements: adult.cisFemale[34]
+    //      }), log
+    //    )
+    //  ).to.equal(true)
+    //  done()
+    //})
   }
 }
 
