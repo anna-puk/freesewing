@@ -13,10 +13,7 @@ function draftBenjaminBow3({
   paperless,
   part,
 }) {
-  if (!options.adjustmentRibbon) {
-    part.render = false
-    return part
-  }
+  if (!options.adjustmentRibbon) return part.hide()
 
   points.bandBottomLeft = points.bandBottomLeft.shift(180, 290)
   points.bandTopLeft = points.bandBottomLeft.flipY()
@@ -35,7 +32,7 @@ function draftBenjaminBow3({
     .line(points.bandTopLeft)
     .close()
     .attr('class', 'fabric')
-    .setRender(true)
+    .unhide()
 
   if (complete) {
     // Paperless?
@@ -47,7 +44,7 @@ function draftBenjaminBow3({
       })
     }
     if (sa) {
-      paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa').setRender(true)
+      paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa').unhide()
     }
     macro('title', {
       at: points.titleAnchor,

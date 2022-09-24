@@ -1,7 +1,7 @@
 import chai from 'chai'
 import {
   Point,
-  isCoord,
+  Design,
   capitalize,
   beamsIntersect,
   linesIntersect,
@@ -21,20 +21,15 @@ import {
   lineIntersectsCircle,
   stretchToScale,
   round,
-  sampleStyle,
   deg2rad,
   rad2deg,
   pctBasedOn,
-  macroName,
+  generateStackTransform,
 } from '../src/index.mjs'
 
 const { expect } = chai
 
 describe('Utils', () => {
-  it('Should return the correct macro name', () => {
-    expect(macroName('test')).to.equal('_macro_test')
-  })
-
   it('Should find the intersection of two endless line segments', () => {
     let a = new Point(10, 20)
     let b = new Point(20, 24)
@@ -463,34 +458,6 @@ describe('Utils', () => {
     expect(round(i.y)).to.equal(400)
   })
 
-  it('Should check for valid coordinate', () => {
-    expect(isCoord(23423.23)).to.equal(true)
-    expect(isCoord(0)).to.equal(true)
-    expect(isCoord()).to.equal(false)
-    expect(isCoord(null)).to.equal(false)
-    expect(isCoord('hi')).to.equal(false)
-    expect(isCoord(NaN)).to.equal(false)
-  })
-
-  it('Should return the correct sample style', () => {
-    expect(sampleStyle(0, 5)).to.equal('stroke: hsl(-66, 100%, 35%);')
-    expect(sampleStyle(1, 5)).to.equal('stroke: hsl(0, 100%, 35%);')
-    expect(sampleStyle(2, 5)).to.equal('stroke: hsl(66, 100%, 35%);')
-    expect(sampleStyle(3, 5)).to.equal('stroke: hsl(132, 100%, 35%);')
-    expect(sampleStyle(4, 5)).to.equal('stroke: hsl(198, 100%, 35%);')
-  })
-
-  it('Should return the correct sample styles', () => {
-    const styles = [
-      'stroke: red;',
-      'stroke: blue;',
-      'stroke: green;',
-      'stroke: pink;',
-      'stroke: orange;',
-    ]
-    for (let i = 0; i < 5; i++) expect(sampleStyle(i, 5, styles)).to.equal(styles[i])
-  })
-
   it('Should convert degrees to radians', () => {
     expect(deg2rad(0)).to.equal(0)
     expect(round(deg2rad(69))).to.equal(1.2)
@@ -509,29 +476,20 @@ describe('Utils', () => {
     expect(result.toAbs(0.0123, { measurements })).to.equal(12.3)
     expect(result.fromAbs(12.3, { measurements })).to.equal(0.0123)
   })
-  /*
-  it('Should generate a part transform', () => {
-    const part = {
+  it('Should generate a stack transform', () => {
+    const test = {
       name: 'test',
-      draft: part => {
-        const { points, Point, paths, Path } = part.shorthand()
+      draft: ({ points, Point, paths, Path, part }) => {
         points.from = new Point(2, 2)
         points.to = new Point(19, 76)
         paths.test = new Path().move(points.from).line(points.to)
         return part
       }
     }
-    const design = new Design({ parts: [ part ]})
+    const design = new Design({ parts: [ test ]})
     const pattern = new design()
-    pattern.draft().render()
-    const transform = generatePartTransform(30, 60, 90, true, true, pattern.__parts.test)
-    expect(transform.transform).to.equal(
-      `translate(${30 + part.topLeft.x + part.bottomRight.x} ${
-        60 + part.topLeft.y + part.bottomRight.y
-      }) scale(-1 -1) rotate(90 ${part.topLeft.x + part.width / 2} ${
-        part.topLeft.y + part.height / 2
-      })`
-    )
+    const props = pattern.draft().getRenderProps()
+    const transform = generateStackTransform(30, 60, 90, true, true, props.stacks.test)
+    expect(transform.transform).to.equal('translate(51 138) scale(-1 -1) rotate(90 10.5 39)')
   })
-  */
 })
