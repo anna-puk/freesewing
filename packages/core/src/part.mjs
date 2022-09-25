@@ -78,18 +78,6 @@ Part.prototype.attr = function (name, value, overwrite = false) {
 }
 
 /**
- * Returns on unused ID (unused in this part)
- *
- * @param {string} prefix - An optional prefix to apply to the ID
- * @return {string} id - The id
- */
-Part.prototype.getId = function (prefix = '') {
-  this.freeId += 1
-
-  return prefix + this.freeId
-}
-
-/**
  * Hide the part
  *
  * @return {Part} part - The Part instance
@@ -125,10 +113,9 @@ Part.prototype.shorthand = function () {
   const shorthand = {
     complete,
     context: this.context,
-    getId: this.getId,
+    getId: this.__getIdClosure(),
     hide: this.hide,
     log: this.context.store.log,
-    macro: this.__macroClosure(),
     paperless,
     part: this,
     sa,
@@ -209,6 +196,9 @@ Part.prototype.shorthand = function () {
     set: (absoluteOptions, name, value) => (self.context.settings.absoluteOptions[name] = value),
   })
 
+  // Macro closure at the end as it includes the shorthand object
+  shorthand.macro = this.__macroClosure(shorthand)
+
   return shorthand
 }
 
@@ -288,6 +278,22 @@ Part.prototype.__boundary = function () {
 }
 
 /**
+ * Returns a closure holding a getId method (returns an ID unused in this part)
+ *
+ * @return {function} getId - The getId function
+ */
+Part.prototype.__getIdClosure = function () {
+  const self = this
+  const method = function (prefix = '') {
+    self.freeId += 1
+
+    return prefix + self.freeId
+  }
+
+  return method
+}
+
+/**
  * Copies point/path/snippet data from part orig into this
  *
  * @private
@@ -332,11 +338,11 @@ Part.prototype.__inject = function (orig) {
  * @private
  * @return {function} method - The closured macro method
  */
-Part.prototype.__macroClosure = function () {
-  let self = this
-  let method = function (key, args) {
-    let macro = utils.__macroName(key)
-    if (typeof self[macro] === 'function') self[macro](args)
+Part.prototype.__macroClosure = function (props) {
+  const self = this
+  const method = function (key, args) {
+    const macro = utils.__macroName(key)
+    if (typeof self[macro] === 'function') self[macro](args, props)
   }
 
   return method
