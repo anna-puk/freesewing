@@ -17,6 +17,7 @@ function titanFront({
   sa,
   absoluteOptions,
   log,
+  units,
   part,
 }) {
   /*
@@ -310,6 +311,26 @@ function titanFront({
   } else {
     points.styleWaistIn = points.waistIn.clone()
     points.styleWaistOut = points.waistOut.clone()
+  }
+  // Now angle the waist (if requested)
+  if (options.waistAngle != 0) {
+    // calculate how much to add/subtract
+    // assume that from the crossSeamCurveStart upwards, the crotch seam will be vertical
+    // base of the triangle is then horizontal distance from crossSeamCurveStart to fork
+    let triangleBase, triangleHeight
+    // use negative value for triangleBase: positive angle means lower front
+    triangleBase = points.fork.dx(points.crotchSeamCurveStart)
+    // length of opposite side is length of adjacent side times tangent of the angle
+    triangleHeight = Math.tan((options.waistAngle * Math.PI) / 180) * triangleBase
+
+    // top of cross seam is a straight line, so just extend
+    points.styleWaistIn = points.crotchSeamCurveStart.shiftOutwards(
+      points.styleWaistIn,
+      triangleHeight
+    )
+
+    // report the change in height
+    log.info(['heightReductionCenterFront', units(-triangleHeight)])
   }
 
   // Seamline
