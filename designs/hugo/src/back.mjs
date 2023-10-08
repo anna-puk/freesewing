@@ -1,6 +1,7 @@
 import { back as brianBack } from '@freesewing/brian'
 import { front } from './front.mjs'
 import { hidePresets } from '@freesewing/core'
+import { backNeckPortion } from './options.mjs'
 
 function hugoBack({
   store,
@@ -34,7 +35,7 @@ function hugoBack({
   const neckOpening = new Path()
     .move(points.cbNeck)
     .curve(points.cbNeck, points.neckCp2, points.neck)
-  points.raglanTipBack = neckOpening.shiftFractionAlong(0.7)
+  points.raglanTipBack = neckOpening.shiftFractionAlong(options.backNeckPortion)
   const neckOpeningParts = neckOpening.split(points.raglanTipBack)
   // Paths
   paths.saBase = new Path()

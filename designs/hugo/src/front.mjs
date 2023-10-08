@@ -14,6 +14,8 @@ import {
   draftForHighBust,
   ribbingHeight,
   pocketWidth,
+  frontNeckPortion,
+  backNeckPortion,
 } from './options.mjs'
 
 function hugoFront({
@@ -61,7 +63,7 @@ function hugoFront({
   const neckOpening = new Path()
     .move(points.cfNeck)
     .curve(points.cfNeckCp1, points.neckCp2, points.neck)
-  points.raglanTipFront = neckOpening.shiftFractionAlong(0.8)
+  points.raglanTipFront = neckOpening.shiftFractionAlong(options.frontNeckPortion)
   const neckOpeningParts = neckOpening.split(points.raglanTipFront)
 
   // Pocket
@@ -220,6 +222,8 @@ export const front = {
     lengthBonus,
     ribbingHeight,
     pocketWidth,
+    frontNeckPortion,
+    backNeckPortion,
   },
   draft: hugoFront,
 }

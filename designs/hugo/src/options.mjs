@@ -14,3 +14,5 @@ export const lengthBonus = { pct: 10, min: 0, max: 20, menu: 'style' }
 export const sleeveLengthBonus = { pct: 2, min: 0, max: 10, menu: 'style' }
 export const ribbingHeight = { pct: 10, min: 4, max: 20, menu: 'style' }
 export const pocketWidth = { pct: 50, min: 35, max: 65, menu: 'style' }
+export const frontNeckPortion = { pct: 80, min: 10, max: 90, menu: 'style' }
+export const backNeckPortion = { pct: 70, min: 10, max: 90, menu: 'style' }
