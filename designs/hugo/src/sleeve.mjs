@@ -18,6 +18,8 @@ function hugoSleeve({
   measurements,
   macro,
   part,
+  log,
+  units,
 }) {
   // Top of raglan sleeve
   points.raglanTop = new Point(0, points.sleeveTip.y - store.get('shoulderLength'))
@@ -100,7 +102,19 @@ function hugoSleeve({
       .curve(points.raglanTipFront, points.slopeFrontCp1, points.slopeFront)
       .curve(points.slopeFrontCp2, points.capQ4Base, points.capQ4Base)
       .length()
-    ragDiff = store.get('raglen') - raglen
+
+    let raglen2 = new Path()
+      .move(points.raglanTipFront)
+      .curve(points.raglanTipFront, points.slopeFrontCp1, points.slopeFront)
+      .curve(points.slopeFrontCp2, points.capQ4Cp2, points.bicepsLeft)
+      .length()
+
+    ragDiff = store.get('raglen') - raglen2
+    log.debug(`Fitting raglan sleeve. Delta for run ${runs} is ${units(ragDiff)}`)
+    log.debug(`Raglan seam length for front is ${units(store.get('raglen'))}`)
+    log.debug(`Raglan seam length for sleeve (front) is ${units(raglen)}`)
+    log.debug(`Raglan seam length 2 for sleeve (front) is ${units(raglen2)}`)
+
     let tipPoints = [
       'raglanTipFront',
       'raglanTipFrontCp1',
