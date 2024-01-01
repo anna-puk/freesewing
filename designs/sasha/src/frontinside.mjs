@@ -1,23 +1,25 @@
+import { pctBasedOn } from '@freesewing/core'
 import { frontInside as nobleFrontInside } from '@freesewing/noble'
 
 export const frontInside = {
   name: 'sasha.frontInside',
   from: nobleFrontInside,
-	measurements: [
-		'hips',
-		'seat',
-		'crossSeam',
-		'crossSeamFront',
-		'upperLeg',
-		'waistToHips',
-		'waistToSeat',
-		'waistToKnee',]
-	options: {
-		lengthBonus: { pct: -10, min: -100, max: 100, ...pctBasedOn('waistToKnee'), menu: style },
-		skirtWidth: {pct: 50, min: 0, max: 100, ...pctBasedOn('hips'), menu: style },
-	},
+  measurements: [
+    'hips',
+    'seat',
+    'crossSeam',
+    'crossSeamFront',
+    'upperLeg',
+    'waistToHips',
+    'waistToSeat',
+    'waistToKnee',
+  ],
+  options: {
+    lengthBonus: { pct: -10, min: -100, max: 100, ...pctBasedOn('waistToKnee'), menu: 'style' },
+    skirtWidth: { pct: 50, min: 0, max: 100, ...pctBasedOn('hips'), menu: 'style' },
+  },
   draft: ({
-		utils,
+    utils,
     store,
     sa,
     Point,
@@ -30,30 +32,41 @@ export const frontInside = {
     measurements,
     macro,
     part,
-		}) => {
+  }) => {
+    let skirtLength = measurements.waistToKnee * options.lengthBonus
 
-		store.set('skirtLength',measurements.waistToKnee*options.lengthBonus)
-		store.set('skirtWidth',measurements.hips*(1 + options.skirtWidth))
-		store.set('skirtDartAngle',Math.asin(measurements.hips/4 * options.skirtWidth/store.get('skirtLength')))
-		
-		points.cfSkirtHem = points.cfHem.shift(270,store.get('skirtLength'))
-		points.dartSkirtHem = points.waistDartLeft.shift(270+store.get('skirtDartAngle'),store.get('skirtWidth')/4)
-				
-		// NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
-		let halvesA = paths.insideSeam.split(points.waistDartLeft)
-		let halvesB = halvesA[1].split(cfNeck)
-		
-		let nobleCf = halvesB[1]
-		let nobleRest = halvesB[0]
-		
-		// store a copy of the insideSeam before overwriting, and hide it
-		paths.nobleInsideSeam = paths.insideSeam.hide()
-		paths.insideSeam = new Path()
-			.move(points.cfSkirtHem)
-			.curve(points.cfSkirtHem.shiftTowards(points.dartSkirtHem,1/3),points.cfSkirtHem.shiftTowards(points.dartSkirtHem,2/3),points.dartSkirtHem)
-			.join(nobleRest)
-			.join(nobleCf)
-			.close
+    store.set('skirtLength', measurements.waistToKnee * options.lengthBonus)
+    store.set('skirtWidth', measurements.hips * (1 + options.skirtWidth))
+    store.set(
+      'skirtDartAngle',
+      Math.asin(((measurements.hips / 4) * options.skirtWidth) / store.get('skirtLength'))
+    )
+
+    points.cfSkirtHem = points.cfHem.shift(270, store.get('skirtLength'))
+    points.dartSkirtHem = points.waistDartLeft.shift(
+      270 + store.get('skirtDartAngle'),
+      store.get('skirtWidth') / 4
+    )
+
+    // NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
+    let halvesA = paths.insideSeam.split(points.waistDartLeft)
+    let halvesB = halvesA[1].split(points.cfNeck)
+
+    let nobleCf = halvesB[1]
+    let nobleRest = halvesB[0]
+
+    // store a copy of the insideSeam before overwriting, and hide it
+    //paths.nobleInsideSeam = paths.insideSeam.hide()
+    paths.insideSeam2 = new Path()
+      .move(points.cfSkirtHem)
+      .curve(
+        points.cfSkirtHem.shiftTowards(points.dartSkirtHem, 1 / 3),
+        points.cfSkirtHem.shiftTowards(points.dartSkirtHem, 2 / 3),
+        points.dartSkirtHem
+      )
+      .join(nobleRest)
+      .join(nobleCf)
+      .close()
 
     if (sa) {
       paths.sa = paths.insideSeam.offset(sa).line(points.cfNeck).attr('class', 'fabric sa')
