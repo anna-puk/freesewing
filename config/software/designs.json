@@ -934,5 +934,19 @@
       "curvedSeam",
       "elastic"
     ]
+  },
+  "sasha": {
+    "code": "Coder name",
+    "description": "A FreeSewing pattern that needs a description",
+    "design": "Designer name",
+    "difficulty": 1,
+    "lab": true,
+    "org": false,
+    "tags": [
+      "tagname"
+    ],
+    "techniques": [
+      "techname"
+    ]
   }
 }
