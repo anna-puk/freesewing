@@ -1,109 +1,59 @@
-import { frontPoints } from './frontpoints.mjs'
+import { frontInside as nobleFrontInside } from '@freesewing/noble'
 
 export const frontInside = {
-  name: 'noble.frontInside',
-  from: frontPoints,
-  draft: ({ store, sa, Point, points, Path, paths, Snippet, snippets, options, macro, part }) => {
-    delete points.waistDartHem
-    delete points.waistDartRight
-    delete points.waistDartRightCp
-    delete points.waistDartCpBottom
-    delete points.bustDartBottom
-    delete points.bustDartCpBottom
-    delete points.bustDartTip
-    delete points.bustDartTop
-    delete points.shoulderDartTipCpDownOutside
-    delete points.ex
-    delete points.bustB
-    delete points.shoulder
-    delete points.shoulderDartShoulder
-    delete points.shoulderDartOutside
-    delete points.pitchMax
-    delete points.armholeCpTarget
-    delete points.armholePitch
-    delete points.armholePitchCp1
-    delete points.armholePitchCp2
-    delete points.armhole
-    delete points.armholeCp2
-    delete points.bustDartCpTop
-    delete points.bustSide
-    delete points.bustDartMiddle
-    delete points.bustDartEdge
+  name: 'sasha.frontInside',
+  from: nobleFrontInside,
+	measurements: [
+		'hips',
+		'seat',
+		'crossSeam',
+		'crossSeamFront',
+		'upperLeg',
+		'waistToHips',
+		'waistToSeat',
+		'waistToKnee',]
+	options: {
+		lengthBonus: { pct: -10, min: -100, max: 100, ...pctBasedOn('waistToKnee'), menu: style },
+		skirtWidth: {pct: 50, min: 0, max: 100, ...pctBasedOn('hips'), menu: style },
+	},
+  draft: ({
+		utils,
+    store,
+    sa,
+    Point,
+    points,
+    Path,
+    paths,
+    Snippet,
+    snippets,
+    options,
+    measurements,
+    macro,
+    part,
+		}) => {
 
-    if (options.dartPosition == 'shoulder') {
-      paths.insideSeam = new Path()
-        .move(points.cfHem)
-        .line(points.waistDartLeft)
-        .curve(points.waistDartLeftCp, points.shoulderDartTipCpDownInside, points.shoulderDartTip)
-        .line(points.shoulderDartInside)
-        .line(points.hps)
-        .curve(points.hpsCp2, points.cfNeckCp1, points.cfNeck)
-
-      paths.seam = paths.insideSeam
-        .join(new Path().move(points.cfNeck).line(points.cfHem))
-        .close()
-        .attr('class', 'fabric')
-
-      store.set(
-        'shoulderDartTipNotch',
-        new Path()
-          .move(points.waistDartLeft)
-          .curve(points.waistDartLeftCp, points.shoulderDartTipCpDownInside, points.shoulderDartTip)
-          .length()
-      )
-    } else {
-      paths.insideSeam = new Path()
-        .move(points.cfHem)
-        .line(points.waistDartLeft)
-        .curve(
-          points.waistDartLeftCp,
-          points.armholeDartTipCpDownInside,
-          points.armholeDartTipInside
-        )
-        .curve(points.waistCircleInsideCp1, points.armholeCircleInsideCp1, points.armholeDartInside)
-        .join(paths.armholeInside)
-        .line(points.hps)
-        .curve(points.hpsCp2, points.cfNeckCp1, points.cfNeck)
-
-      paths.seam = paths.insideSeam
-        .join(new Path().move(points.cfNeck).line(points.cfHem))
-        .close()
-        .attr('class', 'fabric')
-
-      store.set(
-        'shoulderDartTipNotch',
-        new Path()
-          .move(points.waistDartLeft)
-          .curve(
-            points.waistDartLeftCp,
-            points.armholeDartTipCpDownInside,
-            points.armholeDartTipInside
-          )
-          .length()
-      )
-    }
-
-    macro('cutonfold', {
-      from: points.cfNeck,
-      to: points.cfHem,
-      grainline: true,
-    })
-
-    if (options.dartPosition == 'shoulder') {
-      snippets.shoulderDartTip = new Snippet('notch', points.shoulderDartTip)
-    } else {
-      snippets.shoulderDartTip = new Snippet('notch', points.armholeDartTipInside)
-    }
-    points.titleAnchor = new Point(points.hpsCp2.x * 0.75, points.cfNeckCp1.y * 1.5)
-    macro('title', {
-      at: points.titleAnchor,
-      nr: 1,
-      title: 'frontInside',
-    })
-    points.gridAnchor = points.hps.clone()
-
-    points.scaleboxAnchor = points.titleAnchor.shift(-90, 90).shift(0, 10)
-    macro('scalebox', { at: points.scaleboxAnchor, rotate: 270 })
+		store.set('skirtLength',measurements.waistToKnee*options.lengthBonus)
+		store.set('skirtWidth',measurements.hips*(1 + options.skirtWidth))
+		store.set('skirtDartAngle',Math.asin(measurements.hips/4 * options.skirtWidth/store.get('skirtLength')))
+		
+		points.cfSkirtHem = points.cfHem.shift(270,store.get('skirtLength'))
+		points.dartSkirtHem = points.waistDartLeft.shift(270+store.get('skirtDartAngle'),store.get('skirtWidth')/4)
+				
+		// NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
+		let halvesA = paths.insideSeam.split(points.waistDartLeft)
+		let halvesB = halvesA[1].split(cfNeck)
+		
+		let nobleCf = halvesB[1]
+		let nobleRest = halvesB[0]
+		
+		// store a copy of the insideSeam before overwriting, and hide it
+		paths.nobleInsideSeam = paths.insideSeam.hide()
+		paths.insideSeam = new Path()
+			.move(points.cfSkirtHem)
+			.curve(points.cfSkirtHem.shiftTowards(points.dartSkirtHem,1/3),points.cfSkirtHem.shiftTowards(points.dartSkirtHem,2/3),points.dartSkirtHem)
+			.join(nobleRest)
+			.join(nobleCf)
+			.close
 
     if (sa) {
       paths.sa = paths.insideSeam.offset(sa).line(points.cfNeck).attr('class', 'fabric sa')

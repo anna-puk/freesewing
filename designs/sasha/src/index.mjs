@@ -4,13 +4,13 @@ import { Design } from '@freesewing/core'
 import { i18n } from '../i18n/index.mjs'
 import { data } from '../data.mjs'
 // Parts
-import { box } from './box.mjs'
+import { frontInside } from './frontinside.mjs'
 
 // Create new design
 const Sasha = new Design({
   data,
-  parts: [box],
+  parts: [frontInside],
 })
 
 // Named exports
-export { box, i18n, Sasha }
+export { frontInside, i18n, Sasha }
