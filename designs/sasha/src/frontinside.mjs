@@ -16,9 +16,11 @@ export const frontInside = {
   ],
   options: {
     lengthBonus: { pct: -10, min: -100, max: 100, ...pctBasedOn('waistToKnee'), menu: 'style' },
-    skirtWidth: { pct: 50, min: 0, max: 100, ...pctBasedOn('hips'), menu: 'style' },
+    skirtWidthBonus: { pct: 50, min: 0, max: 100, ...pctBasedOn('hips'), menu: 'style' },
   },
   draft: ({
+    log,
+    units,
     utils,
     store,
     sa,
@@ -33,19 +35,30 @@ export const frontInside = {
     macro,
     part,
   }) => {
-    let skirtLength = measurements.waistToKnee * options.lengthBonus
+    // Hide Noble paths
+    for (const key of Object.keys(paths)) paths[key].hide()
+    // for (const i in snippets) delete snippets[i] // keep the notches etc
 
-    store.set('skirtLength', measurements.waistToKnee * options.lengthBonus)
-    store.set('skirtWidth', measurements.hips * (1 + options.skirtWidth))
-    store.set(
-      'skirtDartAngle',
-      Math.asin(((measurements.hips / 4) * options.skirtWidth) / store.get('skirtLength'))
+    store.set('skirtLength', measurements.waistToKnee * (1 + options.lengthBonus))
+    store.set('skirtWidth', measurements.hips * (1 + options.skirtWidthBonus))
+    let angle =
+      (360 *
+        Math.asin(((measurements.hips / 4) * options.skirtWidthBonus) / store.get('skirtLength'))) /
+      (2 * Math.PI)
+    store.set('skirtDartAngle', angle)
+
+    log.debug(
+      `skirt dart angle calculated as ${angle} from ${units(measurements.hips)}, ${
+        options.skirtWidthBonus
+      } and ${units(store.get('skirtLength'))}`
     )
 
+    // skirt portion consists of a rectangle and a 'godet' (but as one piece)
     points.cfSkirtHem = points.cfHem.shift(270, store.get('skirtLength'))
-    points.dartSkirtHem = points.waistDartLeft.shift(
+    points.godetStart = points.waistDartLeft.shift(270, store.get('skirtLength'))
+    points.godetEnd = points.waistDartLeft.shift(
       270 + store.get('skirtDartAngle'),
-      store.get('skirtWidth') / 4
+      store.get('skirtLength')
     )
 
     // NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
@@ -59,10 +72,14 @@ export const frontInside = {
     //paths.nobleInsideSeam = paths.insideSeam.hide()
     paths.insideSeam2 = new Path()
       .move(points.cfSkirtHem)
+      .move(points.godetStart)
       .curve(
-        points.cfSkirtHem.shiftTowards(points.dartSkirtHem, 1 / 3),
-        points.cfSkirtHem.shiftTowards(points.dartSkirtHem, 2 / 3),
-        points.dartSkirtHem
+        points.godetStart.shift(0, points.godetStart.dist(points.godetEnd) / 3),
+        points.godetEnd.shift(
+          store.get('skirtDartAngle'),
+          points.godetEnd.dist(points.godetEnd) / 3
+        ),
+        points.godetEnd
       )
       .join(nobleRest)
       .join(nobleCf)
