@@ -1,91 +1,42 @@
-import { frontPoints } from './frontpoints.mjs'
-import { frontInside } from './frontinside.mjs'
+import { frontOutside as nobleFrontOutside } from '@freesewing/noble'
 
 export const frontOutside = {
-  name: 'noble.frontOutside',
-  from: frontPoints,
-  after: frontInside,
+  name: 'sasha.frontOutside',
+  from: nobleFrontOutside,
   draft: ({ store, sa, points, Path, paths, Snippet, snippets, options, macro, part }) => {
-    delete points.bustDartTop
-    delete points.bustSide
-    delete points.bustDartMiddle
-    delete points.bustDartBottom
-    delete points.bustDartCpBottom
-    delete points.bustB
-    delete points.bustDartEdge
+    // Hide Noble paths
+    for (const key of Object.keys(paths)) paths[key].hide()
+    // for (const i in snippets) delete snippets[i] // keep the notches etc
 
-    macro('rmcutonfold')
+    // take Noble paths, split into convenient pieces
+    // NOTE: nobleFrontOutside is drawn from waistDartLeft to sideHem to armhole (etc)
+    let halvesA = paths.seam.split(points.sideHem)
 
-    if (options.dartPosition == 'shoulder') {
-      paths.princessSeam = new Path()
-        .move(points.shoulderDartOutside)
-        .curve(
-          points.shoulderDartTipCpDownOutside,
-          points.waistUpDartRightCpUp,
-          points.waistUpDartRight
-        )
-        .curve(points.waistUpDartRightCpDown, points.waistCpUp, points.waistDartRight)
-        .hide()
-      paths.armhole = new Path()
-        .move(points.armhole)
-        .curve(points.armholeCp2, points.armholePitchCp1, points.armholePitch)
-        .curve_(points.armholePitchCp2, points.shoulder)
-        .hide()
+    let nobleRest = halvesA[1]
 
-      paths.seam = new Path()
-        .move(points.waistDartRight)
-        .line(points.sideHem)
-        .line(points.armhole)
-        .join(paths.armhole)
-        .line(points.shoulderDartOutside)
-        .join(paths.princessSeam)
-        .close()
-        .attr('class', 'fabric')
-    } else {
-      paths.princessSeam = new Path()
-        .move(points.armholeDartOutside)
-        .curve(
-          points.armholeCircleOutsideCp1,
-          points.waistCircleOutsideCp1,
-          points.waistUpDartRight
-        )
-        .curve(points.waistUpDartRightCpDown, points.waistCpUp, points.waistDartRight)
-        .hide()
-
-      paths.seam = new Path()
-        .move(points.waistDartRight)
-        .line(points.sideHem)
-        .line(points.armhole)
-        .join(paths.armholeOutside.reverse())
-        .join(paths.princessSeam)
-        .close()
-        .attr('class', 'fabric')
-    }
-
-    points.grainTop = points.armhole.shift(225, 20)
-    points.grainBottom = points.sideHemInitial.shift(135, 20)
-    macro('grainline', {
-      from: points.grainBottom,
-      to: points.grainTop,
-    })
-
-    store.cutlist.removeCut()
-    store.cutlist.addCut()
-
-    points.snippet = paths.princessSeam.shiftAlong(
-      paths.princessSeam.length() - store.get('shoulderDartTipNotch')
+    // skirt portion consists of a rectangle and a 'godet' (but as one piece)
+    points.sideSkirtHem = points.sideHem.shift(270, store.get('skirtLength'))
+    points.godetStart = points.waistDartRight.shift(270, store.get('skirtLength'))
+    points.godetEnd = points.waistDartRight.shift(
+      270 - store.get('skirtDartAngle'),
+      store.get('skirtLength')
     )
-    snippets.shoulderDartTip = new Snippet('notch', points.snippet)
 
-    points.titleAnchor = points.waistDartRight
-      .shiftFractionTowards(points.armhole, 0.3)
-      .shiftFractionTowards(points.shoulderDartOutside, 0.2)
-    macro('title', {
-      at: points.titleAnchor,
-      nr: 2,
-      title: 'frontOutside',
-    })
-    points.gridAnchor = points.armholeCpTarget.clone()
+    // start drawing the path at bottom left, which is the 'end' of the godet
+    paths.seam = new Path()
+      .move(points.godetEnd)
+      .curve(
+        points.godetEnd.shift(
+          store.get('skirtDartAngle'),
+          points.godetEnd.dist(points.godetStart) / 3
+        ),
+        points.godetStart.shift(0, points.godetStart.dist(points.godetEnd) / 3),
+        points.godetStart
+      )
+      .move(points.sideSkirtHem)
+      .join(nobleRest)
+      .join(nobleCf)
+      .close()
 
     if (sa) paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa')
 

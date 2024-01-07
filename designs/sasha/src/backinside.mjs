@@ -3,41 +3,66 @@ import { backInside as nobleBackInside } from '@freesewing/noble'
 export const backInside = {
   name: 'sasha.backInside',
   from: nobleBackInside,
+  options: {
+    dartPosition: 'armhole', // only support armhole as princess seam endpoint
+  },
   draft: ({ sa, Point, points, Path, paths, Snippet, snippets, options, macro, part }) => {
-    if (options.dartPosition != 'shoulder') {
-      paths.insideSeam = paths.seam.clone().unhide()
-    } else {
-      // Hide Bella paths
-      for (let key of Object.keys(paths)) paths[key].hide()
-      for (let i in snippets) delete snippets[i]
+    // Hide Noble paths
+    for (const key of Object.keys(paths)) paths[key].hide()
+    // for (const i in snippets) delete snippets[i] // keep the notches etc
 
-      paths.insideSeam = new Path()
-        .move(points.cbNeck)
-        .curve_(points.cbNeckCp2, points.waistCenter)
-        .line(points.dartBottomLeft)
-        .curve(points.dartLeftCp, points.shoulderDartCpDown, points.dartTip)
-        .curve(points.shoulderDartCpUp, points.shoulderDart, points.shoulderDart)
-        .line(points.hps)
-        ._curve(points.cbNeckCp1, points.cbNeck)
-        .close()
-        .attr('class', 'fabric')
-    }
+    // take Noble paths, split into convenient pieces
+    // NOTE: nobleBackInside is drawn from cbNeck to waistCenter to dart to waistSide to armhole etc
+    let halvesA = paths.insideSeam.split(points.dartBottomLeft)
+    let halvesB = halvesA[1].split(points.dartTip)
+    let halvesC = halvesB[1].split(points.armhole)
+    let halvesD = halvesC[1].split(points.shoulderPoint)
 
-    points.grainlineFrom = new Point(points.hps.x / 2, points.shoulder.y)
-    points.grainlineTo = new Point(points.hps.x / 2, points.waistSide.y)
-    macro('grainline', {
-      from: points.grainlineFrom,
-      to: points.grainlineTo,
-    })
+    let nobleCb = halvesA[0]
+    let nobleDartLeftHalf = halvesB[0]
+    let nobleArmholeCurve = halvesD[0]
+    let nobleRest = halvesD[1]
 
-    snippets.dartTip = new Snippet('notch', points.dartTip)
+    // skirt portion consists of a rectangle and a 'godet' (but as one piece)
+    points.cbSkirtHem = points.cbHem.shift(270, store.get('skirtLength'))
+    points.godetStart = points.dartBottomLeft.shift(270, store.get('skirtLength'))
+    points.godetEnd = points.dartBottomLeft.shift(
+      270 + store.get('skirtDartAngle'),
+      store.get('skirtLength')
+    )
 
-    macro('title', {
-      at: points.titleAnchor,
-      nr: 3,
-      title: options.dartPosition != 'shoulder' ? 'back' : 'backInside',
-    })
-    points.gridAnchor = points.hps.clone()
+    // separate the armhole 1/3 of the way down = 2/3 of the way up
+    points.armholeSplit = nobleArmholeCurve.shiftFractionAlong(2 / 3)
+    halvesArmhole = nobleArmholeCurve.split(points.armholeSplit)
+    let upperArmholeCurve = halvesArmhole[0]
+
+    // roughly circular path from point of tip to armhole split
+    let nobleDartToArmhole = new Path()
+      .move(points.dartTip)
+      .curve(
+        points.dartTip.shift(90, points.dartTip.dy(points.armholeSplit) * 0.4),
+        points.armholeSplit.shift(180, points.armholeSplit.dx(points.dartTip) * 0.5),
+        points.armholeSplit
+      )
+      .close()
+
+    // assemble the seam from these paths
+    paths.insideSeam = new Path()
+      .move(points.cbSkirtHem)
+      .move(points.godetStart)
+      .curve(
+        points.godetStart.shift(0, points.godetStart.dist(points.godetEnd) / 3),
+        points.godetEnd.shift(
+          store.get('skirtDartAngle'),
+          points.godetEnd.dist(points.godetEnd) / 3
+        ),
+        points.godetEnd
+      )
+      .join(nobleDartLeftHalf)
+      .join(nobleDartToArmhole)
+      .join(nobleRest)
+      .join(nobleCb)
+      .close()
 
     if (sa) paths.sa = paths.insideSeam.offset(sa).attr('class', 'fabric sa')
 

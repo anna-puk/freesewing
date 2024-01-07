@@ -39,6 +39,14 @@ export const frontInside = {
     for (const key of Object.keys(paths)) paths[key].hide()
     // for (const i in snippets) delete snippets[i] // keep the notches etc
 
+    // take Noble paths, split into convenient pieces
+    // NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
+    let halvesA = paths.insideSeam.split(points.waistDartLeft)
+    let halvesB = halvesA[1].split(points.cfNeck)
+
+    let nobleCf = halvesB[1]
+    let nobleRest = halvesB[0]
+
     store.set('skirtLength', measurements.waistToKnee * (1 + options.lengthBonus))
     store.set('skirtWidth', measurements.hips * (1 + options.skirtWidthBonus))
     let angle =
@@ -61,16 +69,7 @@ export const frontInside = {
       store.get('skirtLength')
     )
 
-    // NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
-    let halvesA = paths.insideSeam.split(points.waistDartLeft)
-    let halvesB = halvesA[1].split(points.cfNeck)
-
-    let nobleCf = halvesB[1]
-    let nobleRest = halvesB[0]
-
-    // store a copy of the insideSeam before overwriting, and hide it
-    //paths.nobleInsideSeam = paths.insideSeam.hide()
-    paths.insideSeam2 = new Path()
+    paths.insideSeam = new Path()
       .move(points.cfSkirtHem)
       .move(points.godetStart)
       .curve(
