@@ -17,6 +17,7 @@ import { backOutside } from './backoutside.mjs'
 // Create new design
 const Sasha = new Design({
   data,
+  // parts: [frontInside, frontOutside, backInside, backOutside],
   parts: [frontInside, frontOutside, backInside, backOutside],
 })
 

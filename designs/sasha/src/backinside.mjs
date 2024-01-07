@@ -6,15 +6,16 @@ export const backInside = {
   options: {
     dartPosition: 'armhole', // only support armhole as princess seam endpoint
   },
-  draft: ({ sa, Point, points, Path, paths, Snippet, snippets, options, macro, part }) => {
+  draft: ({ sa, store, Point, points, Path, paths, Snippet, snippets, options, macro, part }) => {
     // Hide Noble paths
     for (const key of Object.keys(paths)) paths[key].hide()
     // for (const i in snippets) delete snippets[i] // keep the notches etc
 
     // take Noble paths, split into convenient pieces
     // NOTE: nobleBackInside is drawn from cbNeck to waistCenter to dart to waistSide to armhole etc
-    let halvesA = paths.insideSeam.split(points.dartBottomLeft)
-    let halvesB = halvesA[1].split(points.dartTip)
+    let halvesA = paths.insideSeam.split(points.waistCenter)
+    let halvesAA = halvesA[1].split(points.dartBottomLeft) // TODO: rename
+    let halvesB = halvesAA[1].split(points.dartTip)
     let halvesC = halvesB[1].split(points.armhole)
     let halvesD = halvesC[1].split(points.shoulderPoint)
 
@@ -24,7 +25,7 @@ export const backInside = {
     let nobleRest = halvesD[1]
 
     // skirt portion consists of a rectangle and a 'godet' (but as one piece)
-    points.cbSkirtHem = points.cbHem.shift(270, store.get('skirtLength'))
+    points.cbSkirtHem = points.waistCenter.shift(270, store.get('skirtLength'))
     points.godetStart = points.dartBottomLeft.shift(270, store.get('skirtLength'))
     points.godetEnd = points.dartBottomLeft.shift(
       270 + store.get('skirtDartAngle'),
@@ -33,18 +34,17 @@ export const backInside = {
 
     // separate the armhole 1/3 of the way down = 2/3 of the way up
     points.armholeSplit = nobleArmholeCurve.shiftFractionAlong(2 / 3)
-    halvesArmhole = nobleArmholeCurve.split(points.armholeSplit)
+    let halvesArmhole = nobleArmholeCurve.split(points.armholeSplit)
     let upperArmholeCurve = halvesArmhole[0]
 
     // roughly circular path from point of tip to armhole split
     let nobleDartToArmhole = new Path()
       .move(points.dartTip)
       .curve(
-        points.dartTip.shift(90, points.dartTip.dy(points.armholeSplit) * 0.4),
-        points.armholeSplit.shift(180, points.armholeSplit.dx(points.dartTip) * 0.5),
+        points.dartTip.shift(90, -points.dartTip.dy(points.armholeSplit) * 0.4),
+        points.armholeSplit.shift(180, -points.armholeSplit.dx(points.dartTip) * 0.5),
         points.armholeSplit
       )
-      .close()
 
     // assemble the seam from these paths
     paths.insideSeam = new Path()

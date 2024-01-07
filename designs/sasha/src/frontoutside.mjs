@@ -27,15 +27,14 @@ export const frontOutside = {
       .move(points.godetEnd)
       .curve(
         points.godetEnd.shift(
-          store.get('skirtDartAngle'),
+          -store.get('skirtDartAngle'),
           points.godetEnd.dist(points.godetStart) / 3
         ),
-        points.godetStart.shift(0, points.godetStart.dist(points.godetEnd) / 3),
+        points.godetStart.shift(180, points.godetStart.dist(points.godetEnd) / 3),
         points.godetStart
       )
       .move(points.sideSkirtHem)
       .join(nobleRest)
-      .join(nobleCf)
       .close()
 
     if (sa) paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa')

@@ -11,7 +11,7 @@
     "frontInside": "Front inside",
     "frontOutsideTop": "Front outside top",
 		"frontOutsideSkirt": "Front outside skirt",		
-    "frontPoints": "Front base"
+    "frontPoints": "Front base",
 		"pocket": "Pocket bag"
   },
   "s": {},
@@ -107,12 +107,14 @@
     "fullChestEaseReduction": {
       "t": "Full chest ease reduction",
       "d": "Allows you to independently reduce the ease around the chest to make it fit tight(er) in that area"
-    }
+    },
 		"lengthBonus": {
 			"t": "Length bonus",
 			"d": "Increase or decrease the skirt length with respect to knee length"
-		"skirtWidthBonus": }
+    },
+		"skirtWidthBonus": {
 			"t": "Skirt width bonus",
 			"d": "Increase or decrease the additional skirt width with respect to hip circumference"
+    }
   }
 }
