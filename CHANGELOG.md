@@ -28,29 +28,17 @@
  - Fix issue that crashed the design when complete is off. Fixes
  - Base pocket opening on pocket height, rather than width of the garment. Fixes
 
-### lumina
-
-#### Added
-
- - Initial release
-
-### lumira
-
-#### Added
-
- - Initial release
-
 ### sandy
 
 #### Added
 
  - Added a new *panels* option
 
-### tristan
+### lumira
 
 #### Added
 
- - Inital release
+ - Initial release
 
 ### plugin-annotations
 
@@ -162,12 +150,6 @@
 
  - Rephrased flag message when expand is off to avoid confusion about included seam allowance. Fixes
 
-### otis
-
-#### Added
-
- - Initial release
-
 ### paco
 
 #### Changed
@@ -241,6 +223,12 @@
 #### Changed
 
  - Rephrased flag message when expand is off to avoid confusion about included seam allowance. Fixes
+
+### otis
+
+#### Added
+
+ - Initial release
 
 ### plugin-annotations
 

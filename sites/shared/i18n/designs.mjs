@@ -29,16 +29,13 @@ import { i18n as huey } from '@freesewing/huey'
 import { i18n as hugo } from '@freesewing/hugo'
 import { i18n as jaeger } from '@freesewing/jaeger'
 import { i18n as legend } from '@freesewing/legend'
+import { i18n as lily } from '@freesewing/lily'
 import { i18n as lucy } from '@freesewing/lucy'
-import { i18n as lumina } from '@freesewing/lumina'
-import { i18n as lumira } from '@freesewing/lumira'
 import { i18n as lunetius } from '@freesewing/lunetius'
 import { i18n as magde } from '@freesewing/magde'
-import { i18n as naomiwu } from '@freesewing/naomiwu'
 import { i18n as noble } from '@freesewing/noble'
 import { i18n as octoplushy } from '@freesewing/octoplushy'
 import { i18n as onyx } from '@freesewing/onyx'
-import { i18n as otis } from '@freesewing/otis'
 import { i18n as paco } from '@freesewing/paco'
 import { i18n as penelope } from '@freesewing/penelope'
 import { i18n as plugintest } from '@freesewing/plugintest'
@@ -55,12 +52,13 @@ import { i18n as teagan } from '@freesewing/teagan'
 import { i18n as tiberius } from '@freesewing/tiberius'
 import { i18n as titan } from '@freesewing/titan'
 import { i18n as trayvon } from '@freesewing/trayvon'
-import { i18n as tristan } from '@freesewing/tristan'
 import { i18n as uma } from '@freesewing/uma'
 import { i18n as wahid } from '@freesewing/wahid'
 import { i18n as walburga } from '@freesewing/walburga'
 import { i18n as waralee } from '@freesewing/waralee'
 import { i18n as yuri } from '@freesewing/yuri'
+import { i18n as otis } from '@freesewing/otis'
+import { i18n as lumira } from '@freesewing/lumira'
 
 export const designs = {
   aaron,
@@ -90,16 +88,13 @@ export const designs = {
   hugo,
   jaeger,
   legend,
+  lily,
   lucy,
-  lumina,
-  lumira,
   lunetius,
   magde,
-  naomiwu,
   noble,
   octoplushy,
   onyx,
-  otis,
   paco,
   penelope,
   plugintest,
@@ -116,10 +111,11 @@ export const designs = {
   tiberius,
   titan,
   trayvon,
-  tristan,
   uma,
   wahid,
   walburga,
   waralee,
   yuri,
+  otis,
+  lumira,
 }
