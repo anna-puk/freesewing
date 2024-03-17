@@ -10,15 +10,15 @@ export const backOutside = {
 
     // take Noble paths, split into convenient pieces
     // NOTE: nobleBackInside is drawn from cbNeck to waistCenter to dart to waistSide to armhole etc
-    let halvesA = paths.insideSeam.split(points.dartTip)
-    let halvesB = halvesA[1].split(points.dartBottomRight)
-    let halvesC = halvesB[1].split(points.waistSide)
-    let halvesD = halvesC[1].split(points.armhole)
-    let halvesE = halvesD[1].split(points.shoulderPoint)
+    const halvesA = paths.insideSeam.split(points.dartTip)
+    const halvesB = halvesA[1].split(points.dartBottomRight)
+    const halvesC = halvesB[1].split(points.waistSide)
+    const halvesD = halvesC[1].split(points.armhole)
+    const halvesE = halvesD[1].split(points.shoulderPoint)
 
-    let nobleDartRightHalf = halvesB[0]
-    let nobleSide = halvesD[0]
-    let nobleArmholeCurve = halvesE[0]
+    const nobleDartRightHalf = halvesB[0]
+    const nobleSide = halvesD[0]
+    const nobleArmholeCurve = halvesE[0]
 
     // skirt portion consists of a rectangle and a 'godet' (but as one piece)
     points.sideSkirtHem = points.waistSide.shift(270, store.get('skirtLength'))
@@ -31,11 +31,11 @@ export const backOutside = {
     // code below is copied from backinside
     // separate the armhole 1/3 of the way down = 2/3 of the way up
     points.armholeSplit = nobleArmholeCurve.shiftFractionAlong(2 / 3)
-    let halvesArmhole = nobleArmholeCurve.split(points.armholeSplit)
-    let lowerArmholeCurve = halvesArmhole[0] // backinside uses [1] instead
+    const halvesArmhole = nobleArmholeCurve.split(points.armholeSplit)
+    const lowerArmholeCurve = halvesArmhole[0] // backinside uses [1] instead
 
     // roughly circular path from point of tip to armhole split to bottom of armhole
-    let nobleDartToArmhole = new Path()
+    const nobleDartToArmhole = new Path()
       .move(points.dartTip)
       .curve(
         points.dartTip.shift(90, -points.dartTip.dy(points.armholeSplit) * 0.4),

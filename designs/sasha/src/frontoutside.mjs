@@ -10,9 +10,9 @@ export const frontOutside = {
 
     // take Noble paths, split into convenient pieces
     // NOTE: nobleFrontOutside is drawn from waistDartLeft to sideHem to armhole (etc)
-    let halvesA = paths.seam.split(points.sideHem)
+    const halvesA = paths.seam.split(points.sideHem)
 
-    let nobleRest = halvesA[1]
+    const nobleRest = halvesA[1]
 
     // skirt portion consists of a rectangle and a 'godet' (but as one piece)
     points.sideSkirtHem = points.sideHem.shift(270, store.get('skirtLength'))
@@ -39,7 +39,7 @@ export const frontOutside = {
 
     if (sa) paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa')
 
-    let pLeft = paths.princessSeam.edge('left')
+    const pLeft = paths.princessSeam.edge('left')
     macro('hd', {
       from: points.waistDartRight,
       to: points.armholeOutsidePitchCp1,
@@ -136,7 +136,7 @@ export const frontOutside = {
         id: 'hemSideToRight',
       })
     } else {
-      let pTop = paths.princessSeam.edge('top')
+      const pTop = paths.princessSeam.edge('top')
       macro('hd', {
         from: pLeft,
         to: points.armholeOutsidePitchCp1,

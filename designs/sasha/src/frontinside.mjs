@@ -41,15 +41,15 @@ export const frontInside = {
 
     // take Noble paths, split into convenient pieces
     // NOTE: nobleFrontInside is drawn from cfHem to waistDartLeft to shoulder to cfNeck
-    let halvesA = paths.insideSeam.split(points.waistDartLeft)
-    let halvesB = halvesA[1].split(points.cfNeck)
+    const halvesA = paths.insideSeam.split(points.waistDartLeft)
+    const halvesB = halvesA[1].split(points.cfNeck)
 
-    let nobleCf = halvesB[1]
-    let nobleRest = halvesB[0]
+    const nobleCf = halvesB[1]
+    const nobleRest = halvesB[0]
 
     store.set('skirtLength', measurements.waistToKnee * (1 + options.lengthBonus))
     store.set('skirtWidth', measurements.hips * (1 + options.skirtWidthBonus))
-    let angle =
+    const angle =
       (360 *
         Math.asin(((measurements.hips / 4) * options.skirtWidthBonus) / store.get('skirtLength'))) /
       (2 * Math.PI)
