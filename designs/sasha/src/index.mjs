@@ -8,7 +8,6 @@ import { frontInside } from './frontinside.mjs'
 import { frontOutside } from './frontoutside.mjs'
 import { backInside } from './backinside.mjs'
 import { backOutside } from './backoutside.mjs'
-import { pocket } from './parts/pocket/pocket.mjs'
 // import { frontArmholeCalculation } from './frontArmholeCalculation.mjs'
 // import { backArmholeCalculation } from './backArmholeCalculation.mjs'
 // import { front } from './front.mjs'
@@ -19,8 +18,8 @@ import { pocket } from './parts/pocket/pocket.mjs'
 const Sasha = new Design({
   data,
   // parts: [frontInside, frontOutside, backInside, backOutside],
-  parts: [frontInside, frontOutside, backInside, backOutside, pocket],
+  parts: [frontInside, frontOutside, backInside, backOutside],
 })
 
 // Named exports
-export { frontInside, frontOutside, backInside, backOutside, pocket, i18n, Sasha }
+export { frontInside, frontOutside, backInside, backOutside, i18n, Sasha }
