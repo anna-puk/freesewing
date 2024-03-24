@@ -70,6 +70,12 @@ export const frontOutside = {
       .join(nobleRest)
       .close()
 
+    // mark the waist line with notches
+    macro('sprinkle', {
+      snippet: 'notch',
+      on: ['sideHem', 'waistDartRight'],
+    })
+
     // now cut this in half to insert the pocket
     // base position is wrist height, approximated by assuming shoulder and hps are same height
     const waistToWrist = measurements.shoulderToWrist - measurements.hpsToWaistBack

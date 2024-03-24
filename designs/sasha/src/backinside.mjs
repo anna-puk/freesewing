@@ -67,6 +67,12 @@ export const backInside = {
       .join(nobleCb)
       .close()
 
+    // mark the waist line with notches
+    macro('sprinkle', {
+      snippet: 'notch',
+      on: ['waistCenter', 'dartBottomLeft'],
+    })
+
     macro('title', {
       at: points.titleAnchor,
       nr: 3,

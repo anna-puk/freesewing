@@ -64,6 +64,12 @@ export const backOutside = {
       .join(nobleDartRightHalf)
       .close()
 
+    // mark the waist line with notches
+    macro('sprinkle', {
+      snippet: 'notch',
+      on: ['waistSide', 'dartBottomRight'],
+    })
+
     points.titleAnchor = points.dartTip.shiftFractionTowards(points.waistSide, 0.5)
 
     macro('title', {

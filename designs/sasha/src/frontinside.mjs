@@ -85,6 +85,12 @@ export const frontInside = {
       .join(nobleCf)
       .close()
 
+    // mark the waist line with notches
+    macro('sprinkle', {
+      snippet: 'notch',
+      on: ['cfHem', 'waistDartLeft'],
+    })
+
     macro('title', {
       at: points.titleAnchor,
       nr: 1,
