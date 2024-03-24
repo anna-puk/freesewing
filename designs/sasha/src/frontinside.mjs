@@ -4,6 +4,7 @@ import { frontInside as nobleFrontInside } from '@freesewing/noble'
 export const frontInside = {
   name: 'sasha.frontInside',
   from: nobleFrontInside,
+  hide: { from: true },
   measurements: [
     'hips',
     'seat',
@@ -83,6 +84,12 @@ export const frontInside = {
       .join(nobleRest)
       .join(nobleCf)
       .close()
+
+    macro('title', {
+      at: points.titleAnchor,
+      nr: 1,
+      title: 'frontInside',
+    })
 
     if (sa) {
       paths.sa = paths.insideSeam.offset(sa).line(points.cfNeck).attr('class', 'fabric sa')

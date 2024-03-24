@@ -1,8 +1,11 @@
 import { backInside as nobleBackInside } from '@freesewing/noble'
+import { frontInside as sashaFrontInside } from '@freesewing/sasha'
 
 export const backInside = {
   name: 'sasha.backInside',
   from: nobleBackInside,
+  after: sashaFrontInside,
+  hide: { from: true },
   options: {
     dartPosition: 'armhole', // only support armhole as princess seam endpoint
   },
@@ -63,6 +66,12 @@ export const backInside = {
       .join(nobleRest)
       .join(nobleCb)
       .close()
+
+    macro('title', {
+      at: points.titleAnchor,
+      nr: 3,
+      title: 'backInside',
+    })
 
     if (sa) paths.sa = paths.insideSeam.offset(sa).attr('class', 'fabric sa')
 

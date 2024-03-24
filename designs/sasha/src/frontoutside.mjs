@@ -1,9 +1,42 @@
 import { frontOutside as nobleFrontOutside } from '@freesewing/noble'
+import { frontInside as sashaFrontInside } from '@freesewing/sasha'
+
+/* // method to cut a (closed) path in two pieces using a second path (rest of the path is discarded)
+const chopPath = (pathToCut, pathThatCuts) => {
+	let intersections = pathToCut.intersects(pathThatCuts)
+	
+	if (~intersections) {// no intersections found
+		return pathToCut
+	} else if ( length(intersections) ~= 2 ) {
+		log.error("could not chop path; more than two intersections found")
+	} else {
+		 */
 
 export const frontOutside = {
   name: 'sasha.frontOutside',
   from: nobleFrontOutside,
-  draft: ({ store, sa, points, Path, paths, Snippet, snippets, options, macro, part }) => {
+  after: sashaFrontInside,
+  hide: { from: true },
+  measurements: ['waistToHips', 'shoulderToWrist', 'hpsToWaistBack'],
+  options: {
+    pocketCurve: { pct: 54, min: 0, max: 100, menu: 'style' }, //54% just looks good to me
+    pocketOpeningHeight: { pct: 65, min: 0, max: 150, menu: 'style' }, // default is rather arbitrary
+  },
+  draft: ({
+    store,
+    sa,
+    points,
+    Path,
+    paths,
+    Snippet,
+    snippets,
+    options,
+    macro,
+    measurements,
+    utils,
+    log,
+    part,
+  }) => {
     // Hide Noble paths
     for (const key of Object.keys(paths)) paths[key].hide()
     // for (const i in snippets) delete snippets[i] // keep the notches etc
@@ -36,6 +69,119 @@ export const frontOutside = {
       .move(points.sideSkirtHem)
       .join(nobleRest)
       .close()
+
+    // now cut this in half to insert the pocket
+    // base position is wrist height, approximated by assuming shoulder and hps are same height
+    const waistToWrist = measurements.shoulderToWrist - measurements.hpsToWaistBack
+    const pocketHeight = options.pocketOpeningHeight * measurements.waistToHips
+    points.pocketStart = utils.beamsIntersect(
+      points.waistDartRight,
+      points.godetEnd,
+      points.sideHemInitial.shift(0, 1).shift(270, waistToWrist - pocketHeight),
+      points.sideHemInitial.shift(180, 1).shift(270, waistToWrist - pocketHeight)
+    )
+
+    points.pocketEnd = utils.beamsIntersect(
+      points.sideHem,
+      points.sideSkirtHem,
+      points.sideHemInitial.shift(0, 1).shift(270, waistToWrist),
+      points.sideHemInitial.shift(180, 1).shift(270, waistToWrist)
+    )
+
+    const pocketWidth = -points.pocketStart.dx(points.pocketEnd)
+    store.set('pocketWidth', pocketWidth)
+
+    points.cpPocket = points.pocketEnd.shift(0, options.pocketCurve * pocketWidth)
+
+    paths.pocketOpening = new Path()
+      .move(points.pocketStart)
+      ._curve(points.cpPocket, points.pocketEnd)
+
+    /* 		// TODO: turn this into a macro
+    let pathToCut = new Path()
+      .move(points.waistDartRight)
+      .line(points.godetEnd)
+    //let pathToCut = paths.seam.translate(0.001,0.001)
+    // let pathThatCuts = new Path()
+      // .move(points.pocketStart.shift(0,pocketWidth/10))
+      // .line(points.pocketEnd.shift(180,pocketWidth/10))
+    let pathThatCuts = paths.pocketOpening
+    paths.pathThatCuts = pathThatCuts
+    
+    let opToCut = pathToCut.ops[1]
+    let opThatCuts = pathThatCuts.ops[1]
+    
+    console.log(opToCut)
+    
+    let temp_points
+    if (opToCut.type === 'line') {
+      paths.bound_a = pathToCut
+      paths.bound_b = pathToCut
+    } else {
+      temp_points = [opToCut.cp1, opToCut.cp2, opToCut.to]
+      temp_points.sort((a, b) => a.slope(pathToCut.start) - b.slope(pathToCut.start))
+    
+      console.log(temp_points)
+      
+    
+      points.A = temp_points[0].clone()
+      points.B = temp_points[2].clone()
+    
+      paths.bound_a = new Path()
+        .move(temp_points[0])
+        .line(temp_points[0].shiftTowards(pathToCut.start,10))
+      paths.bound_b = new Path()
+        .move(temp_points[2])
+        .line(temp_points[2].shiftTowards(pathToCut.start,10))      
+    }
+    if (opThatCuts.type === 'line') {
+      paths.bound_c = pathThatCuts
+      paths.bound_d = pathThatCuts
+    } else {
+      temp_points = [opThatCuts.cp1, opThatCuts.cp2, opThatCuts.to]
+      //temp_points.sort((a, b) => a.slope(pathThatCuts.start) - b.slope(pathThatCuts.start))
+    
+      paths.bound_c = new Path()
+        .move(temp_points[0])
+        .line(temp_points[0].shiftTowards(pathThatCuts.start,10))
+      paths.bound_d = new Path()
+        .move(temp_points[2])
+        .line(temp_points[2].shiftTowards(pathThatCuts.start,10))      
+      paths.bound_e = new Path()
+        .move(temp_points[1])
+        .line(temp_points[1].shiftTowards(pathThatCuts.start,10))
+    }    
+    
+    // TODO: specify path sections and use utils.curvesIntersect
+    let intersections = pathToCut.intersects(pathThatCuts)
+    
+    if (~intersections) {// no intersections found
+      // return pathToCut
+      log.info('no intersection found')
+    } else if ( length(intersections) != 2 ) {
+      log.error("could not chop path; more than two intersections found")
+    } else {
+      let halves = pathToCut.split(intersections[0])
+      paths.begin = halves[0]
+      let halves2 = halves[1].split(intersections[1])
+      paths.end = halves2[1]
+      
+      let halves3 = pathThatCuts.split(intersections[0])
+      let halves4 = halves[1].split(intersections[1])
+      paths.middle = halves4[0]
+
+      paths.chopped = paths.begin.join(paths.middle).join(paths.end)   
+
+      // return paths.chopped
+      log.info("path was chopped")
+    }
+    // end of 'chop' macro */
+
+    macro('title', {
+      at: points.titleAnchor,
+      nr: 2,
+      title: 'frontOutside',
+    })
 
     if (sa) paths.sa = paths.seam.offset(sa).attr('class', 'fabric sa')
 

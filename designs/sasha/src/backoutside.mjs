@@ -1,8 +1,11 @@
 import { backInside as nobleBackInside } from '@freesewing/noble'
+import { frontInside as sashaFrontInside } from '@freesewing/sasha'
 
 export const backOutside = {
   name: 'sasha.backOutside',
   from: nobleBackInside,
+  after: sashaFrontInside,
+  hide: { from: true },
   draft: ({ sa, store, Point, points, Path, paths, Snippet, snippets, options, macro, part }) => {
     // Hide Noble paths
     for (const key of Object.keys(paths)) paths[key].hide()
@@ -60,6 +63,14 @@ export const backOutside = {
       .join(nobleDartToArmhole.reverse())
       .join(nobleDartRightHalf)
       .close()
+
+    points.titleAnchor = points.dartTip.shiftFractionTowards(points.waistSide, 0.5)
+
+    macro('title', {
+      at: points.titleAnchor,
+      nr: 4,
+      title: 'backOutside',
+    })
 
     if (sa) paths.sa = paths.outsideSeam.offset(sa).attr('class', 'fabric sa')
 
