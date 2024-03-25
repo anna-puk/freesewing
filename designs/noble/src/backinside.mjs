@@ -23,6 +23,8 @@ export const backInside = {
         .attr('class', 'fabric')
     }
 
+    macro('rmcutonfold')
+
     points.grainlineFrom = new Point(points.hps.x / 2, points.shoulder.y)
     points.grainlineTo = new Point(points.hps.x / 2, points.waistSide.y)
     macro('grainline', {
