@@ -2,6 +2,12 @@ import { pctBasedOn } from '@freesewing/core'
 import { draft_path194 } from './paths/draft_path194.mjs'
 import { frontOutside as sashaFrontOutside } from '@freesewing/sasha'
 
+// temporary while the functions aren't in utils yet
+import { Path } from '@freesewing/core'
+import { Point } from '@freesewing/core'
+import { deg2rad } from '@freesewing/core'
+import { linesIntersect } from '@freesewing/core'
+
 function draftPocket({
   Path,
   Point,
@@ -50,11 +56,89 @@ function draftPocket({
 
   const tol = 1 // mm
 
+  points.test_intersection = pathsIntersect(
+    paths,
+    points,
+    paths.pathToCut,
+    paths.pathThatCuts,
+    tol
+  ).addCircle(5, 'interfacing')
+
+  /*
+  // TODO: specify path sections and use utils.curvesIntersect
+   const intersections = paths.pathToCut.intersects(paths.pathThatCuts)  
+   
+   for (const i in intersections) intersections[i].addCircle(5,'interfacing')
+   
+   console.log(intersections)
+   console.log(intersections.length)
+  
+  // Notches
+  if (intersections.length > 1) {
+     macro('sprinkle', {
+      snippet: 'notch',
+      on: intersections,
+    })   
+  } */
+
+  points.titleAnchor = points.path194_p1.shiftFractionTowards(points.path194_p4, 0.5)
+
+  macro('title', {
+    at: points.titleAnchor,
+    nr: 5,
+    title: 'pocket',
+  })
+
+  //paths.seam = paths.path194.split(points.path194_p5).join(paths.pocketOpening.reverse)
+
+  // paths.path194.hide()
+
+  return part
+}
+
+export const pocket = {
+  name: 'test-sasha-pocket.pocket',
+  from: sashaFrontOutside,
+  draft: draftPocket,
+  measurements: [
+    // Enter the measurements your design needs here. See https://freesewing.dev/reference/measurements .
+  ],
+  options: {
+    // Enter your pattern options here. Example:
+    /*
+        extraLength: {
+            pct: 10,
+            min: 5,
+            max: 20,
+            label: 'Extra length',
+            menu: 'fit',
+            ...pctBasedOn('neck')
+        }
+        */
+  },
+}
+
+function projectPointOnBeam(from, to, check, precision = 1e6) {
+  if (from.sitsOn(check)) return 0
+  if (to.sitsOn(check)) return 1
+  let angleBetween = (360 + from.angle(check) - from.angle(to)) % 360 // guaranteed to be in [0 360)
+
+  console.log('points:', from, to, check)
+  console.log('angle:', angleBetween, 'rel. length', from.dist(check) / from.dist(to))
+
+  return (Math.cos(deg2rad(angleBetween)) * from.dist(check)) / from.dist(to)
+}
+
+function pathsIntersect(paths, points, pathToCut, pathThatCuts, tol) {
   let opToCut,
     opThatCuts,
     temp_points,
     distCp1,
     distCp2,
+    xAC,
+    xAD,
+    xBC,
+    xBD,
     distToUpper,
     distToLower,
     pathBase,
@@ -69,13 +153,13 @@ function draftPocket({
   bounds = []
   for (let ind = 1; ind < 10; ind++) {
     console.log(ind)
-    opToCut = paths.pathToCut.ops[1]
-    opThatCuts = paths.pathThatCuts.ops[1]
+    opToCut = pathToCut.ops[1]
+    opThatCuts = pathThatCuts.ops[1]
 
     if (opToCut.type === 'line') {
       pathBase = new Path()
-        .move(paths.pathToCut.start().shiftTowards(paths.pathToCut.end(), -tol / 2))
-        .line(paths.pathToCut.end().shiftTowards(paths.pathToCut.start(), -tol / 2))
+        .move(pathToCut.start().shiftTowards(pathToCut.end(), -tol / 2))
+        .line(pathToCut.end().shiftTowards(pathToCut.start(), -tol / 2))
       paths.bound_a = pathBase.offset(tol / 2).addClass('lining')
       paths.bound_b = pathBase.offset(-tol / 2).addClass('lining sa')
       console.log('pathToCut is a line')
@@ -83,26 +167,52 @@ function draftPocket({
       points.A = pathBase.start()
       points.B = pathBase.end()
     } else {
-      temp_points = [paths.pathToCut.start(), opToCut.cp1, opToCut.cp2, opToCut.to]
+      temp_points = [pathToCut.start(), opToCut.cp1, opToCut.cp2, opToCut.to]
 
       console.log(temp_points)
 
       // calculate *signed* distance to the straight line between start and end
-      distCp1 =
-        ((temp_points[3].x - temp_points[0].x) * (temp_points[0].y - temp_points[1].y) -
-          (temp_points[0].x - temp_points[1].x) * (temp_points[3].y - temp_points[0].y)) /
-        Math.sqrt(
-          (temp_points[3].x - temp_points[0].x) * (temp_points[3].x - temp_points[0].x) +
-            (temp_points[3].y - temp_points[0].y) * (temp_points[3].y - temp_points[0].y)
-        )
+      distCp1 = temp_points[1].sitsRoughlyOn(temp_points[0], tol)
+        ? 0
+        : temp_points[1].sitsRoughlyOn(temp_points[3], tol)
+          ? 0
+          : ((temp_points[3].x - temp_points[0].x) * (temp_points[0].y - temp_points[1].y) -
+              (temp_points[0].x - temp_points[1].x) * (temp_points[3].y - temp_points[0].y)) /
+            Math.sqrt(
+              (temp_points[3].x - temp_points[0].x) * (temp_points[3].x - temp_points[0].x) +
+                (temp_points[3].y - temp_points[0].y) * (temp_points[3].y - temp_points[0].y)
+            )
 
-      distCp2 =
-        ((temp_points[3].x - temp_points[0].x) * (temp_points[0].y - temp_points[2].y) -
-          (temp_points[0].x - temp_points[2].x) * (temp_points[3].y - temp_points[0].y)) /
-        Math.sqrt(
-          (temp_points[3].x - temp_points[0].x) * (temp_points[3].x - temp_points[0].x) +
-            (temp_points[3].y - temp_points[0].y) * (temp_points[3].y - temp_points[0].y)
-        )
+      distCp2 = temp_points[2].sitsRoughlyOn(temp_points[0], tol)
+        ? 0
+        : temp_points[2].sitsRoughlyOn(temp_points[3], tol)
+          ? 0
+          : ((temp_points[3].x - temp_points[0].x) * (temp_points[0].y - temp_points[2].y) -
+              (temp_points[0].x - temp_points[2].x) * (temp_points[3].y - temp_points[0].y)) /
+            Math.sqrt(
+              (temp_points[3].x - temp_points[0].x) * (temp_points[3].x - temp_points[0].x) +
+                (temp_points[3].y - temp_points[0].y) * (temp_points[3].y - temp_points[0].y)
+            )
+
+      console.log('distCp12', distCp1, distCp2)
+
+      console.log(
+        'max test',
+        Math.max(distCp1, distCp2),
+        Math.max(distCp1, 0),
+        Math.max(distCp2, 0),
+        Math.max(distCp1, distCp2, 0)
+      )
+
+      console.log(
+        'min test',
+        Math.min(distCp1, distCp2),
+        Math.min(distCp1, 0),
+        Math.min(distCp2, 0),
+        Math.min(distCp1, distCp2, 0)
+      )
+
+      console.log('tol:', tol)
 
       distToUpper = Math.max(distCp1, distCp2, 0) + tol / 2
       distToLower = Math.min(distCp1, distCp2, 0) - tol / 2
@@ -141,14 +251,14 @@ function draftPocket({
     console.log(opThatCuts)
     angleBetween =
       (360 +
-        paths.pathThatCuts.start().angle(paths.pathThatCuts.end()) -
-        paths.pathToCut.start().angle(paths.pathToCut.end())) %
+        pathThatCuts.start().angle(pathThatCuts.end()) -
+        pathToCut.start().angle(pathToCut.end())) %
       360 // guaranteed to be in [0 360)
     console.log('angle:', angleBetween)
     if (opThatCuts.type === 'line') {
       pathBase = new Path()
-        .move(paths.pathThatCuts.start().shiftTowards(paths.pathThatCuts.end(), -tol / 2))
-        .line(paths.pathThatCuts.end().shiftTowards(paths.pathThatCuts.start(), -tol / 2))
+        .move(pathThatCuts.start().shiftTowards(pathThatCuts.end(), -tol / 2))
+        .line(pathThatCuts.end().shiftTowards(pathThatCuts.start(), -tol / 2))
 
       // reverse path if necessary to ensure that bound_c is closest to the start of bound_a/_b
       if (angleBetween >= 180) {
@@ -163,7 +273,7 @@ function draftPocket({
       points.C = pathBase.start()
       points.D = pathBase.end()
     } else {
-      temp_points = [paths.pathToCut.start(), opToCut.cp1, opToCut.cp2, opToCut.to]
+      temp_points = [pathToCut.start(), opToCut.cp1, opToCut.cp2, opToCut.to]
 
       console.log('temp_points:', temp_points)
 
@@ -230,27 +340,25 @@ function draftPocket({
     paths[`bound_c_iter${ind}`] = paths.bound_c.clone()
     paths[`bound_d_iter${ind}`] = paths.bound_d.clone()
 
-    // bounds = [bounds, paths.bound_a.clone(), paths.bound_b.clone(), paths.bound_c.clone(), paths.bound_b.clone()]
-
-    points.xAC = utils.linesIntersect(
+    xAC = linesIntersect(
       paths.bound_a.start(),
       paths.bound_a.end(),
       paths.bound_c.start(),
       paths.bound_c.end()
     )
-    points.xAD = utils.linesIntersect(
+    xAD = linesIntersect(
       paths.bound_a.start(),
       paths.bound_a.end(),
       paths.bound_d.start(),
       paths.bound_d.end()
     )
-    points.xBC = utils.linesIntersect(
+    xBC = linesIntersect(
       paths.bound_b.start(),
       paths.bound_b.end(),
       paths.bound_c.start(),
       paths.bound_c.end()
     )
-    points.xBD = utils.linesIntersect(
+    xBD = linesIntersect(
       paths.bound_b.start(),
       paths.bound_b.end(),
       paths.bound_d.start(),
@@ -261,8 +369,18 @@ function draftPocket({
     // general approach: for any missing intersection, project the corners of the other box and
     // use this distance instead (or 0 if the projection is beyond the line start/end)
 
+    console.log('paths:', paths.bound_a, paths.bound_c)
+
+    console.log('points:', paths.bound_a.start(), paths.bound_a.end(), paths.bound_c.start())
+
+    console.log('vals:', [
+      0,
+      projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_c.start(), tol),
+      projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_d.start(), tol),
+    ])
+
     points.xACa =
-      points.xAC ||
+      xAC ||
       paths.bound_a.shiftFractionAlong(
         Math.max(
           0,
@@ -283,7 +401,7 @@ function draftPocket({
         )
       )
     points.xACc =
-      points.xAC ||
+      xAC ||
       paths.bound_c.shiftFractionAlong(
         Math.max(
           0,
@@ -304,7 +422,7 @@ function draftPocket({
         )
       )
     points.xADa =
-      points.xAD ||
+      xAD ||
       paths.bound_a.shiftFractionAlong(
         Math.min(
           1,
@@ -320,7 +438,7 @@ function draftPocket({
         )
       )
     points.xADd =
-      points.xAD ||
+      xAD ||
       paths.bound_d.shiftFractionAlong(
         Math.min(
           1,
@@ -336,7 +454,7 @@ function draftPocket({
         )
       )
     points.xBCb =
-      points.xBC ||
+      xBC ||
       paths.bound_b.shiftFractionAlong(
         Math.max(
           0,
@@ -357,7 +475,7 @@ function draftPocket({
         )
       )
     points.xBCc =
-      points.xBC ||
+      xBC ||
       paths.bound_c.shiftFractionAlong(
         Math.max(
           0,
@@ -378,7 +496,7 @@ function draftPocket({
         )
       )
     points.xBDb =
-      points.xBD ||
+      xBD ||
       paths.bound_b.shiftFractionAlong(
         Math.min(
           1,
@@ -394,7 +512,7 @@ function draftPocket({
         )
       )
     points.xBDd =
-      points.xBD ||
+      xBD ||
       paths.bound_d.shiftFractionAlong(
         Math.min(
           1,
@@ -412,7 +530,7 @@ function draftPocket({
 
     // special case: if there are zero intersections, all bounds are parallel:
     // check whether one is inside the other (if not, these curves do not intersect)
-    if (!(points.xAC || points.xAD || points.xBC || points.xBD)) {
+    if (!(xAC || xAD || xBC || xBD)) {
       // project all starting points onto a perpendicular line
       points.CvsAB = projectPointOnBeam(
         paths.bound_a.start(),
@@ -433,29 +551,6 @@ function draftPocket({
       }
     }
 
-    /* // this section no longer needed, covered by general approach above
-    if (!points.xAC ^ !points.xBC) {
-      // XOR: exactly one is false
-      distToFirst = 0
-    } else {
-      distToFirst = Math.min(
-        paths.bound_a.start().dist(points.xAC),
-        paths.bound_b.start().dist(points.xBC)
-      )
-    }
-    if (!points.xAD ^ !points.xBD) {
-      // XOR: exactly one is false
-      distToLast = 0
-    } else {
-      distToLast = Math.min(
-        paths.bound_a.end().dist(points.xAD),
-        paths.bound_b.end().dist(points.xBD)
-      )
-    } */
-
-    /*       // old version: if we don't know the orientations, need to check all distances
-      distToFirst = Math.min(paths.bound_a.start().dist(points.xAC),paths.bound_a.start().dist(points.xAD),paths.bound_b.start().dist(points.xBC),paths.bound_b.start().dist(points.xBD))
-      distToLast = Math.min(paths.bound_a.end().dist(points.xAC),paths.bound_a.end().dist(points.xAD),paths.bound_b.end().dist(points.xBC),paths.bound_b.end().dist(points.xBD)) */
     distToFirst = Math.min(
       paths.bound_a.start().dist(points.xACa),
       paths.bound_b.start().dist(points.xBCb)
@@ -469,13 +564,9 @@ function draftPocket({
 
     // NOTE: distance to intersection along the bound_ lines is guaranteed to be shorter than (or equal to) the length along the curve to that intersection, because a line is the shortest way to get from A to B
     // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
-    halves = paths.pathToCut.split(paths.pathToCut.shiftAlong(distToFirst - tol, 1 / tol))
+    halves = pathToCut.split(pathToCut.shiftAlong(distToFirst - tol, 1 / tol))
     paths.temp = halves[1].reverse()
     halves2 = halves[1].split(paths.temp.shiftAlong(distToLast - tol, 1 / tol))
-
-    // paths.first_part = halves[0]
-    // paths.middle_part = halves2[0]
-    // paths.last_part = halves2[1]
 
     potentialIntersectionToCut = halves2[0]
 
@@ -488,10 +579,10 @@ function draftPocket({
       if (
         potentialIntersectionToCut
           .shiftFractionAlong(0.5)
-          .sitsRoughlyOn(potentialIntersectionThatCuts.shiftFractionAlong(0.5), tol)
+          .sitsRoughlyOn(pathThatCuts.shiftFractionAlong(0.5), tol)
       ) {
         points.intersection = potentialIntersectionToCut.shiftFractionAlong(0.5) // got it!
-        break // TODO: once this becomes its own function, add a return here
+        return points.intersection
       }
     }
     // } else { // TODO: add an elseif that splits the path in two if the remaining length is 'significant'
@@ -511,7 +602,7 @@ function draftPocket({
     )
 
     // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
-    halves = paths.pathThatCuts.split(paths.pathThatCuts.shiftAlong(distToFirst - tol, 1 / tol))
+    halves = pathThatCuts.split(pathThatCuts.shiftAlong(distToFirst - tol, 1 / tol))
     paths.temp = halves[1].reverse()
     halves2 = halves[1].split(paths.temp.shiftAlong(distToLast - tol, 1 / tol))
 
@@ -519,73 +610,27 @@ function draftPocket({
 
     if (potentialIntersectionThatCuts.length() < tol) {
       points.intersection = potentialIntersectionThatCuts.shiftFractionAlong(0.5) // pick the middle
-      break // TODO: once this becomes its own function, add a return here
+    } else if (
+      potentialIntersectionToCut.length() < 10 * tol &&
+      potentialIntersectionToCut
+        .shiftFractionAlong(0.5)
+        .sitsRoughlyOn(pathThatCuts.shiftFractionAlong(0.5), tol)
+    ) {
+      // if we're lucky, the middles are within tol of each other
+      points.intersection = potentialIntersectionToCut.shiftFractionAlong(0.5) // got it!
+      return points.intersection
     } else {
-      // repeat the whole thing
-      paths.pathToCut = potentialIntersectionToCut
-      paths.pathThatCuts = potentialIntersectionThatCuts
+      // repeat the whole thing (recursive function)
+      points.intersection = pathsIntersect(
+        paths,
+        points,
+        potentialIntersectionToCut,
+        potentialIntersectionThatCuts,
+        tol
+      )
     }
-    //}
+    // } else { // TODO: add an elseif that splits the path in two if the remaining length is 'significant'
+
+    return points.intersection
   }
-
-  /*
-  // TODO: specify path sections and use utils.curvesIntersect
-   const intersections = paths.pathToCut.intersects(paths.pathThatCuts)  
-   
-   for (const i in intersections) intersections[i].addCircle(5,'interfacing')
-   
-   console.log(intersections)
-   console.log(intersections.length)
-  
-  // Notches
-  if (intersections.length > 1) {
-     macro('sprinkle', {
-      snippet: 'notch',
-      on: intersections,
-    })   
-  } */
-
-  points.titleAnchor = points.path194_p1.shiftFractionTowards(points.path194_p4, 0.5)
-
-  macro('title', {
-    at: points.titleAnchor,
-    nr: 5,
-    title: 'pocket',
-  })
-
-  //paths.seam = paths.path194.split(points.path194_p5).join(paths.pocketOpening.reverse)
-
-  // paths.path194.hide()
-
-  return part
-}
-
-export const pocket = {
-  name: 'test-sasha-pocket.pocket',
-  from: sashaFrontOutside,
-  draft: draftPocket,
-  measurements: [
-    // Enter the measurements your design needs here. See https://freesewing.dev/reference/measurements .
-  ],
-  options: {
-    // Enter your pattern options here. Example:
-    /*
-        extraLength: {
-            pct: 10,
-            min: 5,
-            max: 20,
-            label: 'Extra length',
-            menu: 'fit',
-            ...pctBasedOn('neck')
-        }
-        */
-  },
-}
-
-function projectPointOnBeam(from, to, check, precision = 1e6) {
-  if (from.sitsOn(check)) return 0
-  if (to.sitsOn(check)) return 1
-  let angleBetween = (360 + from.angle(check) - from.angle(to)) % 360 // guaranteed to be in [0 360)
-
-  return (Math.cos(utils.deg2rad(angleBetween)) * from.dist(check)) / from.dist(to)
 }
