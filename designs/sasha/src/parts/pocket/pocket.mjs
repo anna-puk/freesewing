@@ -140,9 +140,10 @@ function draftPocket({
 
     console.log(opThatCuts)
     angleBetween =
-      360 +
-      paths.pathThatCuts.start().angle(paths.pathThatCuts.end()) -
-      (paths.pathToCut.start().angle(paths.pathToCut.end()) % 360) // guaranteed to be in [0 360)
+      (360 +
+        paths.pathThatCuts.start().angle(paths.pathThatCuts.end()) -
+        paths.pathToCut.start().angle(paths.pathToCut.end())) %
+      360 // guaranteed to be in [0 360)
     console.log('angle:', angleBetween)
     if (opThatCuts.type === 'line') {
       pathBase = new Path()
@@ -256,8 +257,183 @@ function draftPocket({
       paths.bound_d.end()
     )
 
-    // TODO: deal with some lines not intersecting
-    // NOTE: distance to intersection along the bound_ lines is guaranteed to be shorter than (or equal to) the length along the curve to that intersection, because a line is the shortest way to get from A to B
+    // deal with some lines not intersecting
+    // general approach: for any missing intersection, project the corners of the other box and
+    // use this distance instead (or 0 if the projection is beyond the line start/end)
+
+    points.xACa =
+      points.xAC ||
+      paths.bound_a.shiftFractionAlong(
+        Math.max(
+          0,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_a.start(),
+              paths.bound_a.end(),
+              paths.bound_c.start(),
+              tol
+            ),
+            projectPointOnBeam(
+              paths.bound_a.start(),
+              paths.bound_a.end(),
+              paths.bound_d.start(),
+              tol
+            )
+          )
+        )
+      )
+    points.xACc =
+      points.xAC ||
+      paths.bound_c.shiftFractionAlong(
+        Math.max(
+          0,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_c.start(),
+              paths.bound_c.end(),
+              paths.bound_a.start(),
+              tol
+            ),
+            projectPointOnBeam(
+              paths.bound_c.start(),
+              paths.bound_c.end(),
+              paths.bound_b.start(),
+              tol
+            )
+          )
+        )
+      )
+    points.xADa =
+      points.xAD ||
+      paths.bound_a.shiftFractionAlong(
+        Math.min(
+          1,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_a.start(),
+              paths.bound_a.end(),
+              paths.bound_c.end(),
+              tol
+            ),
+            projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_d.end(), tol)
+          )
+        )
+      )
+    points.xADd =
+      points.xAD ||
+      paths.bound_d.shiftFractionAlong(
+        Math.min(
+          1,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_d.start(),
+              paths.bound_d.end(),
+              paths.bound_a.end(),
+              tol
+            ),
+            projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_b.end(), tol)
+          )
+        )
+      )
+    points.xBCb =
+      points.xBC ||
+      paths.bound_b.shiftFractionAlong(
+        Math.max(
+          0,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_b.start(),
+              paths.bound_b.end(),
+              paths.bound_c.start(),
+              tol
+            ),
+            projectPointOnBeam(
+              paths.bound_b.start(),
+              paths.bound_b.end(),
+              paths.bound_d.start(),
+              tol
+            )
+          )
+        )
+      )
+    points.xBCc =
+      points.xBC ||
+      paths.bound_c.shiftFractionAlong(
+        Math.max(
+          0,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_c.start(),
+              paths.bound_c.end(),
+              paths.bound_a.start(),
+              tol
+            ),
+            projectPointOnBeam(
+              paths.bound_c.start(),
+              paths.bound_c.end(),
+              paths.bound_b.start(),
+              tol
+            )
+          )
+        )
+      )
+    points.xBDb =
+      points.xBD ||
+      paths.bound_b.shiftFractionAlong(
+        Math.min(
+          1,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_b.start(),
+              paths.bound_b.end(),
+              paths.bound_c.end(),
+              tol
+            ),
+            projectPointOnBeam(paths.bound_b.start(), paths.bound_b.end(), paths.bound_d.end(), tol)
+          )
+        )
+      )
+    points.xBDd =
+      points.xBD ||
+      paths.bound_d.shiftFractionAlong(
+        Math.min(
+          1,
+          Math.min(
+            projectPointOnBeam(
+              paths.bound_d.start(),
+              paths.bound_d.end(),
+              paths.bound_a.end(),
+              tol
+            ),
+            projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_b.end(), tol)
+          )
+        )
+      )
+
+    // special case: if there are zero intersections, all bounds are parallel:
+    // check whether one is inside the other (if not, these curves do not intersect)
+    if (!(points.xAC || points.xAD || points.xBC || points.xBD)) {
+      // project all starting points onto a perpendicular line
+      points.CvsAB = projectPointOnBeam(
+        paths.bound_a.start(),
+        paths.bound_b.start(),
+        paths.bound_c.start(),
+        tol
+      )
+      points.DvsAB = projectPointOnBeam(
+        paths.bound_a.start(),
+        paths.bound_b.start(),
+        paths.bound_d.start(),
+        tol
+      )
+
+      if ((points.CvsAB < 0 && points.DvsAB < 0) || (points.CvsAB > 1 && points.DvsAB > 1)) {
+        points.intersection = false
+        break
+      }
+    }
+
+    /* // this section no longer needed, covered by general approach above
     if (!points.xAC ^ !points.xBC) {
       // XOR: exactly one is false
       distToFirst = 0
@@ -275,14 +451,23 @@ function draftPocket({
         paths.bound_a.end().dist(points.xAD),
         paths.bound_b.end().dist(points.xBD)
       )
-    }
+    } */
 
     /*       // old version: if we don't know the orientations, need to check all distances
       distToFirst = Math.min(paths.bound_a.start().dist(points.xAC),paths.bound_a.start().dist(points.xAD),paths.bound_b.start().dist(points.xBC),paths.bound_b.start().dist(points.xBD))
       distToLast = Math.min(paths.bound_a.end().dist(points.xAC),paths.bound_a.end().dist(points.xAD),paths.bound_b.end().dist(points.xBC),paths.bound_b.end().dist(points.xBD)) */
+    distToFirst = Math.min(
+      paths.bound_a.start().dist(points.xACa),
+      paths.bound_b.start().dist(points.xBCb)
+    )
+    distToLast = Math.min(
+      paths.bound_a.end().dist(points.xADa),
+      paths.bound_b.end().dist(points.xBDb)
+    )
 
-    console.log([distToFirst, distToLast])
+    console.log('distAB:', [distToFirst, distToLast])
 
+    // NOTE: distance to intersection along the bound_ lines is guaranteed to be shorter than (or equal to) the length along the curve to that intersection, because a line is the shortest way to get from A to B
     // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
     halves = paths.pathToCut.split(paths.pathToCut.shiftAlong(distToFirst - tol, 1 / tol))
     paths.temp = halves[1].reverse()
@@ -313,16 +498,16 @@ function draftPocket({
 
     // TODO: use angleBetween to determine which intersections are relevant here
     distToFirst = Math.min(
-      paths.bound_c.start().dist(points.xAC),
-      paths.bound_c.start().dist(points.xBC),
-      paths.bound_d.start().dist(points.xAD),
-      paths.bound_d.start().dist(points.xBD)
+      paths.bound_c.start().dist(points.xACc),
+      paths.bound_c.start().dist(points.xBCc),
+      paths.bound_d.start().dist(points.xADd),
+      paths.bound_d.start().dist(points.xBDd)
     )
     distToLast = Math.min(
-      paths.bound_c.end().dist(points.xAC),
-      paths.bound_c.end().dist(points.xBC),
-      paths.bound_d.end().dist(points.xAD),
-      paths.bound_d.end().dist(points.xBD)
+      paths.bound_c.end().dist(points.xACc),
+      paths.bound_c.end().dist(points.xBCc),
+      paths.bound_d.end().dist(points.xADd),
+      paths.bound_d.end().dist(points.xBDd)
     )
 
     // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
@@ -395,4 +580,12 @@ export const pocket = {
         }
         */
   },
+}
+
+function projectPointOnBeam(from, to, check, precision = 1e6) {
+  if (from.sitsOn(check)) return 0
+  if (to.sitsOn(check)) return 1
+  let angleBetween = (360 + from.angle(check) - from.angle(to)) % 360 // guaranteed to be in [0 360)
+
+  return (Math.cos(utils.deg2rad(angleBetween)) * from.dist(check)) / from.dist(to)
 }
