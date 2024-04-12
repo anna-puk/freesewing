@@ -1458,7 +1458,12 @@ export function pathsIntersect(paths, points, pathToCut, pathThatCuts, tol) {
   }
 }
 
-export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
+export function closestFraction(frac1, frac2) {
+  return Math.max(0, Math.min(1, Math.min(frac1, frac2)))
+}
+
+export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, depth = 0) {
+  const maxIterations = 10
   let opToCut,
     opThatCuts,
     temp_points,
@@ -1471,6 +1476,7 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
     distToUpper,
     distToLower,
     pathBase,
+    pathTemp,
     halves,
     halves2,
     distToFirst,
@@ -1478,23 +1484,55 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
     potentialIntersectionThatCuts,
     potentialIntersectionToCut,
     bounds,
-    angleBetween
+    angleBetween,
+    bound_a,
+    bound_b,
+    bound_c,
+    bound_d,
+    pointA,
+    pointB,
+    upperStart,
+    upperEnd,
+    lowerStart,
+    lowerEnd,
+    pointC,
+    pointD,
+    Ccp,
+    Dcp,
+    xACa,
+    xACc,
+    xADa,
+    xADd,
+    xBCb,
+    xBCc,
+    xBDb,
+    xBDd,
+    CvsAB,
+    DvsAB,
+    newStart,
+    newEnd,
+    newFrom,
+    newCp1,
+    newCp2,
+    newTo,
+    intersection
   bounds = []
-  for (let ind = 1; ind < 10; ind++) {
-    console.log(ind)
+  if (depth < maxIterations) {
+    console.log('iteration: ', depth)
 
     // define bounds for the line
     pathBase = new Path()
       .move(start.shiftTowards(end, -tol / 2))
       .line(end.shiftTowards(start, -tol / 2))
-    paths.bound_a = pathBase.offset(tol / 2).addClass('lining')
-    paths.bound_b = pathBase.offset(-tol / 2).addClass('lining sa')
+    bound_a = pathBase.offset(tol / 2).addClass('lining')
+    bound_b = pathBase.offset(-tol / 2).addClass('lining sa')
     console.log('pathToCut is a line')
 
-    points.A = pathBase.start()
-    points.B = pathBase.end()
+    pointA = pathBase.start()
+    pointB = pathBase.end()
 
     // define bounds for the curve
+    console.log('point input:', [start, end, from, cp1, cp2, to])
     angleBetween = (360 + start.angle(end) - from.angle(to)) % 360 // guaranteed to be in [0 360)
     console.log('angle:', angleBetween)
 
@@ -1531,185 +1569,120 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
     console.log('dist:', [distToUpper, distToLower])
 
     // re-use upper/lower start/end points
-    points.upperStart = temp_points[0]
-      .shiftTowards(temp_points[3], distToUpper)
-      .rotate(90, temp_points[0])
-    points.upperEnd = temp_points[3]
-      .shiftTowards(temp_points[0], distToUpper)
-      .rotate(270, temp_points[3])
-    points.lowerStart = temp_points[0]
-      .shiftTowards(temp_points[3], distToLower)
-      .rotate(90, temp_points[0])
-    points.lowerEnd = temp_points[3]
-      .shiftTowards(temp_points[0], distToLower)
-      .rotate(270, temp_points[3])
+    upperStart = temp_points[0].shiftTowards(temp_points[3], distToUpper).rotate(90, temp_points[0])
+    upperEnd = temp_points[3].shiftTowards(temp_points[0], distToUpper).rotate(270, temp_points[3])
+    lowerStart = temp_points[0].shiftTowards(temp_points[3], distToLower).rotate(90, temp_points[0])
+    lowerEnd = temp_points[3].shiftTowards(temp_points[0], distToLower).rotate(270, temp_points[3])
 
-    paths.bound_c = new Path()
-      .move(points.upperStart.shiftTowards(points.upperEnd, -tol / 2))
-      .line(points.upperEnd.shiftTowards(points.upperStart, -tol / 2))
+    bound_c = new Path()
+      .move(upperStart.shiftTowards(upperEnd, -tol / 2))
+      .line(upperEnd.shiftTowards(upperStart, -tol / 2))
       .addClass('mark')
 
-    paths.bound_d = new Path()
-      .move(points.lowerStart.shiftTowards(points.lowerEnd, -tol / 2))
-      .line(points.lowerEnd.shiftTowards(points.lowerStart, -tol / 2))
+    bound_d = new Path()
+      .move(lowerStart.shiftTowards(lowerEnd, -tol / 2))
+      .line(lowerEnd.shiftTowards(lowerStart, -tol / 2))
       .addClass('mark sa')
 
-    points.C = temp_points[0].clone()
-    points.D = temp_points[3].clone()
-    points.Ccp = temp_points[1].clone()
-    points.Dcp = temp_points[2].clone()
+    pointC = temp_points[0].clone()
+    pointD = temp_points[3].clone()
+    Ccp = temp_points[1].clone()
+    Dcp = temp_points[2].clone()
   }
 
-  paths[`bound_a_iter${ind}`] = paths.bound_a.clone()
-  paths[`bound_b_iter${ind}`] = paths.bound_b.clone()
-  paths[`bound_c_iter${ind}`] = paths.bound_c.clone()
-  paths[`bound_d_iter${ind}`] = paths.bound_d.clone()
+  /*   paths[`bound_a_iter${ind}`] = bound_a.clone()
+  paths[`bound_b_iter${ind}`] = bound_b.clone()
+  paths[`bound_c_iter${ind}`] = bound_c.clone()
+  paths[`bound_d_iter${ind}`] = bound_d.clone() */
 
-  xAC = linesIntersect(
-    paths.bound_a.start(),
-    paths.bound_a.end(),
-    paths.bound_c.start(),
-    paths.bound_c.end()
-  )
-  xAD = linesIntersect(
-    paths.bound_a.start(),
-    paths.bound_a.end(),
-    paths.bound_d.start(),
-    paths.bound_d.end()
-  )
-  xBC = linesIntersect(
-    paths.bound_b.start(),
-    paths.bound_b.end(),
-    paths.bound_c.start(),
-    paths.bound_c.end()
-  )
-  xBD = linesIntersect(
-    paths.bound_b.start(),
-    paths.bound_b.end(),
-    paths.bound_d.start(),
-    paths.bound_d.end()
-  )
+  xAC = linesIntersect(bound_a.start(), bound_a.end(), bound_c.start(), bound_c.end())
+  xAD = linesIntersect(bound_a.start(), bound_a.end(), bound_d.start(), bound_d.end())
+  xBC = linesIntersect(bound_b.start(), bound_b.end(), bound_c.start(), bound_c.end())
+  xBD = linesIntersect(bound_b.start(), bound_b.end(), bound_d.start(), bound_d.end())
 
   // deal with some lines not intersecting
   // general approach: for any missing intersection, project the corners of the other box and
   // use this distance instead (or 0 if the projection is beyond the line start/end)
 
-  console.log('paths:', paths.bound_a, paths.bound_c)
+  console.log('paths:', bound_a, bound_c)
 
-  console.log('points:', paths.bound_a.start(), paths.bound_a.end(), paths.bound_c.start())
+  console.log('points:', bound_a.start(), bound_a.end(), bound_c.start())
 
   console.log('vals:', [
     0,
-    projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_c.start(), tol),
-    projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_d.start(), tol),
+    projectPointOnBeam(bound_a.start(), bound_a.end(), bound_c.start(), tol),
+    projectPointOnBeam(bound_a.start(), bound_a.end(), bound_d.start(), tol),
+    Math.max(
+      0,
+      Math.min(
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_c.start(), tol),
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_d.start(), tol)
+      )
+    ),
   ])
 
-  points.xACa =
+  xACa =
     xAC ||
-    paths.bound_a.shiftFractionAlong(
-      Math.max(
-        0,
-        Math.min(
-          projectPointOnBeam(
-            paths.bound_a.start(),
-            paths.bound_a.end(),
-            paths.bound_c.start(),
-            tol
-          ),
-          projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_d.start(), tol)
-        )
+    bound_a.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_c.start(), tol),
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_d.start(), tol)
       )
     )
-  points.xACc =
+  xACc =
     xAC ||
-    paths.bound_c.shiftFractionAlong(
-      Math.max(
-        0,
-        Math.min(
-          projectPointOnBeam(
-            paths.bound_c.start(),
-            paths.bound_c.end(),
-            paths.bound_a.start(),
-            tol
-          ),
-          projectPointOnBeam(paths.bound_c.start(), paths.bound_c.end(), paths.bound_b.start(), tol)
-        )
+    bound_c.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_c.start(), bound_c.end(), bound_a.start(), tol),
+        projectPointOnBeam(bound_c.start(), bound_c.end(), bound_b.start(), tol)
       )
     )
-  points.xADa =
+  xADa =
     xAD ||
-    paths.bound_a.shiftFractionAlong(
-      Math.min(
-        1,
-        Math.min(
-          projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_c.end(), tol),
-          projectPointOnBeam(paths.bound_a.start(), paths.bound_a.end(), paths.bound_d.end(), tol)
-        )
+    bound_a.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_c.end(), tol),
+        projectPointOnBeam(bound_a.start(), bound_a.end(), bound_d.end(), tol)
       )
     )
-  points.xADd =
+  xADd =
     xAD ||
-    paths.bound_d.shiftFractionAlong(
-      Math.min(
-        1,
-        Math.min(
-          projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_a.end(), tol),
-          projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_b.end(), tol)
-        )
+    bound_d.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_d.start(), bound_d.end(), bound_a.end(), tol),
+        projectPointOnBeam(bound_d.start(), bound_d.end(), bound_b.end(), tol)
       )
     )
-  points.xBCb =
+  xBCb =
     xBC ||
-    paths.bound_b.shiftFractionAlong(
-      Math.max(
-        0,
-        Math.min(
-          projectPointOnBeam(
-            paths.bound_b.start(),
-            paths.bound_b.end(),
-            paths.bound_c.start(),
-            tol
-          ),
-          projectPointOnBeam(paths.bound_b.start(), paths.bound_b.end(), paths.bound_d.start(), tol)
-        )
+    bound_b.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_b.start(), bound_b.end(), bound_c.start(), tol),
+        projectPointOnBeam(bound_b.start(), bound_b.end(), bound_d.start(), tol)
       )
     )
-  points.xBCc =
+  xBCc =
     xBC ||
-    paths.bound_c.shiftFractionAlong(
-      Math.max(
-        0,
-        Math.min(
-          projectPointOnBeam(
-            paths.bound_c.start(),
-            paths.bound_c.end(),
-            paths.bound_a.start(),
-            tol
-          ),
-          projectPointOnBeam(paths.bound_c.start(), paths.bound_c.end(), paths.bound_b.start(), tol)
-        )
+    bound_c.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_c.start(), bound_c.end(), bound_a.start(), tol),
+        projectPointOnBeam(bound_c.start(), bound_c.end(), bound_b.start(), tol)
       )
     )
-  points.xBDb =
+  xBDb =
     xBD ||
-    paths.bound_b.shiftFractionAlong(
-      Math.min(
-        1,
-        Math.min(
-          projectPointOnBeam(paths.bound_b.start(), paths.bound_b.end(), paths.bound_c.end(), tol),
-          projectPointOnBeam(paths.bound_b.start(), paths.bound_b.end(), paths.bound_d.end(), tol)
-        )
+    bound_b.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_b.start(), bound_b.end(), bound_c.end(), tol),
+        projectPointOnBeam(bound_b.start(), bound_b.end(), bound_d.end(), tol)
       )
     )
-  points.xBDd =
+  xBDd =
     xBD ||
-    paths.bound_d.shiftFractionAlong(
-      Math.min(
-        1,
-        Math.min(
-          projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_a.end(), tol),
-          projectPointOnBeam(paths.bound_d.start(), paths.bound_d.end(), paths.bound_b.end(), tol)
-        )
+    bound_d.shiftFractionAlong(
+      closestFraction(
+        projectPointOnBeam(bound_d.start(), bound_d.end(), bound_a.end(), tol),
+        projectPointOnBeam(bound_d.start(), bound_d.end(), bound_b.end(), tol)
       )
     )
 
@@ -1717,33 +1690,17 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
   // check whether one is inside the other (if not, these curves do not intersect)
   if (!(xAC || xAD || xBC || xBD)) {
     // project all starting points onto a perpendicular line
-    points.CvsAB = projectPointOnBeam(
-      paths.bound_a.start(),
-      paths.bound_b.start(),
-      paths.bound_c.start(),
-      tol
-    )
-    points.DvsAB = projectPointOnBeam(
-      paths.bound_a.start(),
-      paths.bound_b.start(),
-      paths.bound_d.start(),
-      tol
-    )
+    CvsAB = projectPointOnBeam(bound_a.start(), bound_b.start(), bound_c.start(), tol)
+    DvsAB = projectPointOnBeam(bound_a.start(), bound_b.start(), bound_d.start(), tol)
 
-    if ((points.CvsAB < 0 && points.DvsAB < 0) || (points.CvsAB > 1 && points.DvsAB > 1)) {
-      points.intersection = false
-      return points.intersection
+    if ((CvsAB < 0 && DvsAB < 0) || (CvsAB > 1 && DvsAB > 1)) {
+      intersection = false
+      return intersection
     }
   }
 
-  distToFirst = Math.min(
-    paths.bound_a.start().dist(points.xACa),
-    paths.bound_b.start().dist(points.xBCb)
-  )
-  distToLast = Math.min(
-    paths.bound_a.end().dist(points.xADa),
-    paths.bound_b.end().dist(points.xBDb)
-  )
+  distToFirst = Math.min(bound_a.start().dist(xACa), bound_b.start().dist(xBCb))
+  distToLast = Math.min(bound_a.end().dist(xADa), bound_b.end().dist(xBDb))
 
   console.log('distAB:', [distToFirst, distToLast])
 
@@ -1752,6 +1709,8 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
 
   newStart = start.shiftTowards(end, distToFirst - tol)
   newEnd = end.shiftTowards(start, distToLast - tol)
+
+  console.log('newstartend:', [newStart, newEnd])
 
   // TODO: calculate roughLength first to save time?
   // NOTE: several bezier operations use 100 segments, so 10 * tol ensures that these segments are an order of magnitude smaller than our tolerance
@@ -1763,52 +1722,68 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol) {
       { x: cp2.x, y: cp2.y },
       { x: to.x, y: to.y }
     )
-    if (newStart.shiftFractionTowards(newEnd, 0.5).sitsRoughlyOn(bz.compute(0.5), tol)) {
-      points.intersection = newStart.shiftFractionTowards(newEnd, 0.5) // got it!
-      return points.intersection
+    let tempBzPoint = bz.compute(0.5)
+    let tempPoint = new Point(tempBzPoint.x, tempBzPoint.y)
+    if (newStart.shiftFractionTowards(newEnd, 0.5).sitsRoughlyOn(tempPoint, tol)) {
+      intersection = newStart.shiftFractionTowards(newEnd, 0.5) // got it!
+      return intersection
     }
   }
   // } else { // TODO: add an elseif that splits the path in two if the remaining length is 'significant'
 
   // TODO: use angleBetween to determine which intersections are relevant here
   distToFirst = Math.min(
-    paths.bound_c.start().dist(points.xACc),
-    paths.bound_c.start().dist(points.xBCc),
-    paths.bound_d.start().dist(points.xADd),
-    paths.bound_d.start().dist(points.xBDd)
+    bound_c.start().dist(xACc),
+    bound_c.start().dist(xBCc),
+    bound_d.start().dist(xADd),
+    bound_d.start().dist(xBDd)
   )
   distToLast = Math.min(
-    paths.bound_c.end().dist(points.xACc),
-    paths.bound_c.end().dist(points.xBCc),
-    paths.bound_d.end().dist(points.xADd),
-    paths.bound_d.end().dist(points.xBDd)
+    bound_c.end().dist(xACc),
+    bound_c.end().dist(xBCc),
+    bound_d.end().dist(xADd),
+    bound_d.end().dist(xBDd)
   )
 
   // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
-  // TODO: use to/from/cp1/cp2 (or temp_points) instead of pathThatCuts ***hierbenik***
-  halves = pathThatCuts.split(pathThatCuts.shiftAlong(distToFirst - tol, 1 / tol))
-  paths.temp = halves[1].reverse()
-  halves2 = halves[1].split(paths.temp.shiftAlong(distToLast - tol, 1 / tol))
+  pathTemp = new Path().move(from).curve(cp1, cp2, to)
+  halves = pathTemp.split(pathTemp.shiftAlong(distToFirst - tol, 1 / tol))
+  pathTemp = halves[1].reverse()
+  halves2 = halves[1].split(pathTemp.shiftAlong(distToLast - tol, 1 / tol))
 
   potentialIntersectionThatCuts = halves2[0]
 
   if (potentialIntersectionThatCuts.length() < tol) {
-    points.intersection = potentialIntersectionThatCuts.shiftFractionAlong(0.5) // pick the middle
+    intersection = potentialIntersectionThatCuts.shiftFractionAlong(0.5) // pick the middle
   } else if (
-    potentialIntersectionToCut.length() < 10 * tol &&
-    potentialIntersectionToCut
+    newStart.dist(newEnd) < 10 * tol &&
+    potentialIntersectionThatCuts
       .shiftFractionAlong(0.5)
-      .sitsRoughlyOn(pathThatCuts.shiftFractionAlong(0.5), tol)
+      .sitsRoughlyOn(newStart.shiftFractionTowards(newEnd, 0.5), tol)
   ) {
     // if we're lucky, the middles are within tol of each other
-    points.intersection = potentialIntersectionToCut.shiftFractionAlong(0.5) // got it!
-    return points.intersection
+    intersection = potentialIntersectionThatCuts.shiftFractionAlong(0.5) // got it!
+    return intersection
   } else {
     // repeat the whole thing (recursive function)
-    points.intersection = lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol)
-    // TODO: add ind / depth, avoid infinite recursion
+    newFrom = potentialIntersectionThatCuts.start()
+    opThatCuts = potentialIntersectionThatCuts.ops[1]
+    newCp1 = opThatCuts.cp1
+    newCp2 = opThatCuts.cp2
+    newTo = opThatCuts.to
+
+    intersection = lineIntersectsCurveAlt(
+      newStart,
+      newEnd,
+      newFrom,
+      newCp1,
+      newCp2,
+      newTo,
+      tol,
+      depth + 1
+    )
   }
   // } else { // TODO: add an elseif that splits the path in two if the remaining length is 'significant'
 
-  return points.intersection
+  return intersection
 }
