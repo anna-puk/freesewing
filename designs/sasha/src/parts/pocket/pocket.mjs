@@ -44,7 +44,7 @@ function draftPocket({
   // -points.path194_p5.dy(points.pocketEnd))
   // .translate(0,-0.0001)
   paths.pathThatCuts = new Path()
-    .move(points.path194_p1.translate(15, -15))
+    .move(points.path194_p1.translate(15, -15).shift(90, options.lineStartShift * paths.pocketOpening.length()))
     .line(
       points.path194_p5
         .translate(-50, 50)
@@ -57,8 +57,18 @@ function draftPocket({
   paths.pathToCut = paths.pocketOpening
     .translate(-points.path194_p5.dx(points.pocketEnd), -points.path194_p5.dy(points.pocketEnd))
     .unhide()
+    
+  points.middle = paths.pathToCut.shiftFractionAlong(0.5).addCircle(5,'interfacing')
+    
+  let halves = paths.pathToCut.split(points.middle)
+  
+  for (let i in halves) {
+    paths[i] = halves[i]
+      .attr("style", "stroke-width: 3; stroke-opacity: 0.5;")
+      .attr("style", `stroke: hsl(${i * 70}, 100%, 50%)`)
+  }  
 
-  const tol = 1 // mm
+  const tol = 5 // mm
 
   /*   points.test_intersection = utils
     .pathsIntersect(paths, points, paths.pathToCut, paths.pathThatCuts, tol)
@@ -66,6 +76,7 @@ function draftPocket({
 
   let opCurve = paths.pathToCut.ops[1]
 
+  console.log('calling lineIntersectsCurveAlt from pocket')
   const test_intersection2 = utils.lineIntersectsCurveAlt(
     paths,
     paths.pathThatCuts.start(),
@@ -77,16 +88,32 @@ function draftPocket({
     tol
   )
 
+  let num_intersects
   if (test_intersection2) {
-    console.log(test_intersection2)
+    console.log('test_intersection:',test_intersection2)
     if (test_intersection2 instanceof Array) {
-      for (let i of test_intersection2) {
-        if (i) i.addCircle(5, 'facing')
+      const intersections_flat = test_intersection2.flat(Infinity)
+      console.log('intersections_flat:',intersections_flat)
+      let nint = 0
+      for (let i of intersections_flat) {
+        if (i) {
+          i.addCircle(5, 'facing')
+          points[`intersection_${nint++}`] = i.clone()       
+        }
       }
+      num_intersects = nint
     } else {
       points.intersection = test_intersection2.addCircle(5, 'facing')
+      num_intersects = 1
     }
+  } else {
+    num_intersects = 0
   }
+  
+  console.log('lineIntersectsCurveAlt found', num_intersects,'intersections')
+    
+  
+  console.log('paths',paths)
 
   /*   let point3 = new Point(36, 160)
   let point3Cp1 = new Point(44, 106)
@@ -166,8 +193,14 @@ export const pocket = {
   options: {
     lineEndShift: {
       pct: 0,
-      min: -400,
-      max: +400,
+      min: -200,
+      max: +200,
+      menu: 'fit',
+    },
+    lineStartShift: {
+      pct: 0,
+      min: -200,
+      max: +200,
       menu: 'fit',
     },
   },
