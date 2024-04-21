@@ -58,27 +58,12 @@ function draftPocket({
     .translate(-points.path194_p5.dx(points.pocketEnd), -points.path194_p5.dy(points.pocketEnd))
     .unhide()
     
-  points.middle = paths.pathToCut.shiftFractionAlong(0.5).addCircle(5,'interfacing')
-    
-  let halves = paths.pathToCut.split(points.middle)
-  
-  for (let i in halves) {
-    paths[i] = halves[i]
-      .attr("style", "stroke-width: 3; stroke-opacity: 0.5;")
-      .attr("style", `stroke: hsl(${i * 70}, 100%, 50%)`)
-  }  
-
-  const tol = 5 // mm
-
-  /*   points.test_intersection = utils
-    .pathsIntersect(paths, points, paths.pathToCut, paths.pathThatCuts, tol)
-    .addCircle(5, 'interfacing') */
+  const tol = 3 // mm
 
   let opCurve = paths.pathToCut.ops[1]
 
   console.log('calling lineIntersectsCurveAlt from pocket')
   const test_intersection2 = utils.lineIntersectsCurveAlt(
-    paths,
     paths.pathThatCuts.start(),
     paths.pathThatCuts.end(),
     paths.pathToCut.start(),
@@ -193,14 +178,14 @@ export const pocket = {
   options: {
     lineEndShift: {
       pct: 0,
-      min: -200,
-      max: +200,
+      min: -100,
+      max: +100,
       menu: 'fit',
     },
     lineStartShift: {
-      pct: 0,
-      min: -200,
-      max: +200,
+      pct: -0.2,
+      min: -50,
+      max: +10,
       menu: 'fit',
     },
   },
