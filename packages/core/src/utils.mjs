@@ -965,7 +965,7 @@ function closestFraction(frac) {
 
 function boundsForLine(start, end, tol) {
   // exception: start and end are extremely close
-  if (start.sitsRoughlyOn(end,tol)) {
+  if (start.dist(end) < tol) {
     // make bounds (roughly) horizontal
     const upperBound = new Path()
       .move(start.translate(-tol,tol))
@@ -1225,7 +1225,7 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, dept
       )
       let tempBzPoint = bz.compute(0.5)
       let tempPoint = new Point(tempBzPoint.x, tempBzPoint.y)
-      if (newStart.shiftFractionTowards(newEnd, 0.5).sitsRoughlyOn(tempPoint, tol)) {
+      if (newStart.shiftFractionTowards(newEnd, 0.5).dist(tempPoint) < tol) {
         intersections = newStart.shiftFractionTowards(newEnd, 0.5) // got it!
         console.log(
           'found intersection in ',
@@ -1264,22 +1264,29 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, dept
     const newLength = newCurve.length()
     if (newLength < tol) {
       // either we have found an intersection, or there isn't one
-      if (newStart.shiftFractionTowards(newEnd, 0.5).sitsRoughlyOn(newCurve.shiftFractionAlong(0.5), tol)) {
-        intersections = newStart.shiftFractionTowards(newEnd, 0.5) // got it!
+      const potentialIntersection = newCurve.shiftFractionAlong(0.5)
+      const closestFractionOnLine = projectPointOnBeam(newStart,newEnd,potentialIntersection)
+      const closestPointOnLine = newStart.shiftFractionTowards(newEnd,closestFraction(projectPointOnBeam(newStart,newEnd,potentialIntersection)))      
+      
+      console.log('hoping to find intersection for segment', segmentName, ' in ', depth, 'iterations using potential intersection',potentialIntersection,'and closest point',closestPointOnLine,' (at fraction',closestFractionOnLine,')')
+      
+      if (potentialIntersection.dist(closestPointOnLine) < tol) {
+        intersections = potentialIntersection // got it!
         console.log(
-          'found intersection for segment', segmentName, 'in ', depth, 'iterations by reducing curve length to <tol'
+          'found intersection for segment', segmentName, ' in ', depth, 'iterations by reducing curve length to <tol'
         )
         return intersections
       } else {
-        console.log('ruled out intersections for segment', segmentName, 'in ', depth, 'iterations by reducing curve length to <tol')
+        console.log('ruled out intersections for segment', segmentName, ' in ', depth, 'iterations by reducing curve length to <tol')
+        console.log('closest points are',potentialIntersection.dist(closestPointOnLine),'apart')
         return false
       }
     } else if (
       newStart.dist(newEnd) < 10 * tol &&
       newCurve
         .shiftFractionAlong(0.5)
-        .sitsRoughlyOn(newStart.shiftFractionTowards(newEnd, 0.5), tol)
-    ) {
+        .dist(newStart.shiftFractionTowards(newEnd, 0.5)) < tol) {
+      // TODO: check whether either end of the curve is closer (and then use that)
       // we're lucky; the middles are within tol of each other
       intersections = newCurve.shiftFractionAlong(0.5) // got it!
       console.log('found intersection for segment', segmentName, 'in ', depth, 'iterations by reducing curve length to <10*tol')
@@ -1287,7 +1294,7 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, dept
     } else if (newLength > 0.9 * oldLength) {
       // split, then repeat the whole thing (recursive function)
       console.log('splitting curve for segment', segmentName, ' in half after ', depth, ' iterations; new length: ', newLength, '; old length: ',oldLength)
-      
+           
       // use Bezier.js to split at t = 0.5, which is more efficient
       newFrom = newCurve.start()
       tempOp = newCurve.ops[1]
@@ -1366,7 +1373,7 @@ export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, dept
 
     return intersections
   } else {
-    console.log('no intersection found for segment', segmentName, 'after', depth, 'iterations; line length',start.dist(end),', curve lenght',new Path()
+    console.log('no intersection found for segment', segmentName, 'after', depth, 'iterations; line length',start.dist(end),', curve length',new Path()
       .move(to)
       .curve(cp1,cp2,to)
       .length())
