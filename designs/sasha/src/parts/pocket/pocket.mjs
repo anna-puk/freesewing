@@ -100,7 +100,7 @@ function draftPocket({
   
   console.log('paths',paths)
 
-  /*   let point3 = new Point(36, 160)
+  let point3 = new Point(36, 160)
   let point3Cp1 = new Point(44, 106)
   let point4Cp2 = new Point(53, 67)
   let point4 = new Point(49, 17)
@@ -116,11 +116,10 @@ function draftPocket({
     .move(dartPoint0)
     .curve(dartPoint0Cp1, dartPoint1Cp2, dartPoint1)
 
-  let i = utils.pathsIntersect(paths,points,
-    paths.p1,paths.d1,tol
-    )  
+  console.log('calling curvesIntersectAlt from pocket')
+  let i = utils.curvesIntersectAlt(point3, point3Cp1, point4Cp2, point4, dartPoint0, dartPoint0Cp1, dartPoint1Cp2, dartPoint1 ,tol)  
     
-/*     console.log('i',i) */
+  console.log('i',i)
 
   /*     let A = new Point(10, 10)
     let Acp = new Point(10, 30)
