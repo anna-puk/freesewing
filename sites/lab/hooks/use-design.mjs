@@ -58,6 +58,10 @@ import { Wahid as wahid } from '@freesewing/wahid'
 import { Walburga as walburga } from '@freesewing/walburga'
 import { Waralee as waralee } from '@freesewing/waralee'
 import { Yuri as yuri } from '@freesewing/yuri'
+import { Demonstrate_alt_intersections as demonstrate_alt_intersections } from '@freesewing/demonstrate_alt_intersections'
+import { Test6 as test6 } from '@freesewing/test6'
+import { Test7 as test7 } from '@freesewing/test7'
+import { Test8 as test8 } from '@freesewing/test8'
 
 const designs = {
   aaron,
@@ -116,6 +120,10 @@ const designs = {
   walburga,
   waralee,
   yuri,
+  demonstrate_alt_intersections,
+  test6,
+  test7,
+  test8,
 }
 
 export const useDesign = (design) => (designs[design] ? designs[design] : false)

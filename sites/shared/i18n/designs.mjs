@@ -61,6 +61,10 @@ import { i18n as wahid } from '@freesewing/wahid'
 import { i18n as walburga } from '@freesewing/walburga'
 import { i18n as waralee } from '@freesewing/waralee'
 import { i18n as yuri } from '@freesewing/yuri'
+import { i18n as demonstrate_alt_intersections } from '@freesewing/demonstrate_alt_intersections'
+import { i18n as test6 } from '@freesewing/test6'
+import { i18n as test7 } from '@freesewing/test7'
+import { i18n as test8 } from '@freesewing/test8'
 
 export const designs = {
   aaron,
@@ -122,4 +126,8 @@ export const designs = {
   walburga,
   waralee,
   yuri,
+  demonstrate_alt_intersections,
+  test6,
+  test7,
+  test8,
 }
