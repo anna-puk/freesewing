@@ -4,9 +4,7 @@ import { Bezier } from 'bezier-js'
 import {
   linesIntersect,
   lineIntersectsCurve,
-  lineIntersectsCurveAlt,
   curvesIntersect,
-  curvesIntersectAlt,
   pointOnLine,
   curveParameterFromPoint,
   curveEdge,
@@ -458,7 +456,7 @@ Path.prototype.intersects = function (path) {
           )
         } else if (pathB.ops[1].type === 'curve') {
           __addIntersectionsToArray(
-            lineIntersectsCurveAlt(
+            lineIntersectsCurve(
               pathA.ops[0].to,
               pathA.ops[1].to,
               pathB.ops[0].to,
@@ -472,7 +470,7 @@ Path.prototype.intersects = function (path) {
       } else if (pathA.ops[1].type === 'curve') {
         if (pathB.ops[1].type === 'line') {
           __addIntersectionsToArray(
-            lineIntersectsCurveAlt(
+            lineIntersectsCurve(
               pathB.ops[0].to,
               pathB.ops[1].to,
               pathA.ops[0].to,
@@ -1209,7 +1207,7 @@ Path.prototype.__intersectsAxis = function (val = false, mode) {
       )
     } else if (path.ops[1].type === 'curve') {
       __addIntersectionsToArray(
-        lineIntersectsCurveAlt(
+        lineIntersectsCurve(
           lineStart,
           lineEnd,
           path.ops[0].to,

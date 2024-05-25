@@ -43,7 +43,10 @@ function draftBox({
     opCurve.cp1,
     opCurve.cp2,
     opCurve.to,
-    tol
+    tol,
+    0,
+    'base',
+    paths
   )
 
   let num_intersects
@@ -72,7 +75,7 @@ function draftBox({
 
   console.log('paths', paths)
 
-  let point3 = new Point(36, 160)
+  /*   let point3 = new Point(36, 160)
   let point3Cp1 = new Point(44, 106)
   let point4Cp2 = new Point(53, 67)
   let point4 = new Point(49, 17)
@@ -94,10 +97,13 @@ function draftBox({
     dartPoint0Cp1,
     dartPoint1Cp2,
     dartPoint1,
-    tol
+    tol,
+    0,
+    'base',
+    paths
   )
 
-  console.log('i', i)
+  console.log('i', i) */
 
   return part
 }
