@@ -44,8 +44,6 @@ function draftBox({
     opCurve.cp2,
     opCurve.to,
     tol,
-    0,
-    'base',
     paths
   )
 

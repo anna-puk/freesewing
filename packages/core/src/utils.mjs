@@ -983,26 +983,31 @@ function closestFraction(frac) {
   return Math.max(0, Math.min(1, frac))
 }
 
-function boundsForLine(start, end, tol) {
+function boundsForLine(start, end, interTol, intraTol) {
   // exception: start and end are extremely close
-  if (start.dist(end) < tol) {
+  if (start.dist(end) < intraTol) {
     // make bounds (roughly) horizontal
-    const upperBound = new Path().move(start.translate(-tol, tol)).line(end.translate(tol, tol))
-    const lowerBound = new Path().move(start.translate(-tol, -tol)).line(end.translate(tol, -tol))
+    // TODO: check that using interTol is okay - will the intersection still be on the path (to intraTol precision?)
+    const upperBound = new Path()
+      .move(start.translate(-interTol, interTol))
+      .line(end.translate(interTol, interTol))
+    const lowerBound = new Path()
+      .move(start.translate(-interTol, -interTol))
+      .line(end.translate(interTol, -interTol))
     console.log('defined boundsForLine as roughly horizontal')
     return [upperBound, lowerBound]
   } else {
     const pathBase = new Path()
-      .move(start.shiftTowards(end, -tol / 2))
-      .line(end.shiftTowards(start, -tol / 2))
+      .move(start.shiftTowards(end, -intraTol / 2))
+      .line(end.shiftTowards(start, -intraTol / 2))
     console.log('pathBase', pathBase, 'start', start, 'end', end)
-    const upperBound = pathBase.offset(tol / 2)
-    const lowerBound = pathBase.offset(-tol / 2)
+    const upperBound = pathBase.offset(interTol / 2)
+    const lowerBound = pathBase.offset(-interTol / 2)
     return [upperBound, lowerBound]
   }
 }
 
-function boundsForCurve(from, cp1, cp2, to, tol) {
+function boundsForCurve(from, cp1, cp2, to, interTol, intraTol) {
   // calculate *signed* distance to the straight line between start and end
   const temp_points = [from, cp1, cp2, to]
   const distCp1 =
@@ -1021,8 +1026,8 @@ function boundsForCurve(from, cp1, cp2, to, tol) {
         (temp_points[3].y - temp_points[0].y) * (temp_points[3].y - temp_points[0].y)
     )
 
-  const distToUpper = Math.max(distCp1, distCp2, 0) + tol / 2
-  const distToLower = Math.min(distCp1, distCp2, 0) - tol / 2
+  const distToUpper = Math.max(distCp1, distCp2, 0) + interTol / 2
+  const distToLower = Math.min(distCp1, distCp2, 0) - interTol / 2
 
   console.log('dist:', [distToUpper, distToLower])
 
@@ -1040,13 +1045,13 @@ function boundsForCurve(from, cp1, cp2, to, tol) {
     .rotate(270, temp_points[3])
 
   const upperBound = new Path()
-    .move(upperStart.shiftTowards(upperEnd, -tol / 2))
-    .line(upperEnd.shiftTowards(upperStart, -tol / 2))
+    .move(upperStart.shiftTowards(upperEnd, -intraTol / 2))
+    .line(upperEnd.shiftTowards(upperStart, -intraTol / 2))
     .addClass('mark')
 
   const lowerBound = new Path()
-    .move(lowerStart.shiftTowards(lowerEnd, -tol / 2))
-    .line(lowerEnd.shiftTowards(lowerStart, -tol / 2))
+    .move(lowerStart.shiftTowards(lowerEnd, -intraTol / 2))
+    .line(lowerEnd.shiftTowards(lowerStart, -intraTol / 2))
     .addClass('mark sa')
 
   return [upperBound, lowerBound]
@@ -1149,7 +1154,7 @@ function extractPosFrom(intersections) {
   let pos = []
   if (intersections instanceof Array) {
     for (let i of intersections) {
-      if (i) pos.push(i.pos)
+      if (i[0]) pos.push(i[0].pos)
     }
   } else {
     pos = intersections.pos
@@ -1157,16 +1162,40 @@ function extractPosFrom(intersections) {
   return pos
 }
 
-export function lineIntersectsCurveAlt(
+export function lineIntersectsCurveAlt(start, end, from, cp1, cp2, to, tol, paths = []) {
+  const depth = 0
+  const segmentName = 'base'
+  const maxTolIntra = 5 // 5 for testing // 0.1 // tolIntra: precision with which the intersection is found
+
+  // actual calculation happens in a recursive function
+  const rawIntersections = lineIntersectsCurveAltRecursive(
+    start,
+    end,
+    from,
+    cp1,
+    cp2,
+    to,
+    tol, // tolInter: allowed distance between line and curve
+    tol < maxTolIntra ? tol : maxTolIntra,
+    depth,
+    segmentName,
+    paths
+  )
+
+  return extractPosFrom(rawIntersections)
+}
+
+export function lineIntersectsCurveAltRecursive(
   start,
   end,
   from,
   cp1,
   cp2,
   to,
-  tol,
-  depth = 0,
-  segmentName = 'base',
+  interTol,
+  intraTol,
+  depth,
+  segmentName,
   paths = []
 ) {
   const maxIterations = 10
@@ -1189,7 +1218,7 @@ export function lineIntersectsCurveAlt(
     console.log('point input:', [start, end, from, cp1, cp2, to])
 
     // define bounds for the line
-    bounds = boundsForLine(start, end, tol)
+    bounds = boundsForLine(start, end, interTol, intraTol)
 
     const bound_a = bounds[0].addClass('lining')
     const bound_b = bounds[1].addClass('lining sa')
@@ -1208,7 +1237,7 @@ export function lineIntersectsCurveAlt(
     angleBetween = ((angleBetween + 90) % 360) - 90
 
     // define bounds for the curve
-    bounds = boundsForCurve(...temp_points, tol)
+    bounds = boundsForCurve(...temp_points, interTol, intraTol)
 
     const bound_c = bounds[0].addClass('mark')
     const bound_d = bounds[1].addClass('mark sa')
@@ -1229,7 +1258,7 @@ export function lineIntersectsCurveAlt(
       bound_c.start(),
       bound_d.start(),
       angleBetween,
-      tol
+      intraTol
     )
 
     // find intersections of the bounds
@@ -1246,7 +1275,7 @@ export function lineIntersectsCurveAlt(
       bound_d.start(),
       bound_d.end(),
       angleBetween,
-      tol
+      intraTol
     )
 
     console.log(
@@ -1277,13 +1306,13 @@ export function lineIntersectsCurveAlt(
     // remove these sections from the line segment
     // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
 
-    if (lengthsToRemove[0] - tol > 0) {
-      newStart = start.shiftTowards(end, lengthsToRemove[0] - tol)
+    if (lengthsToRemove[0] - intraTol > 0) {
+      newStart = start.shiftTowards(end, lengthsToRemove[0] - intraTol)
     } else {
       newStart = start
     }
-    if (lengthsToRemove[1] - tol > 0) {
-      newEnd = end.shiftTowards(start, lengthsToRemove[1] - tol)
+    if (lengthsToRemove[1] - intraTol > 0) {
+      newEnd = end.shiftTowards(start, lengthsToRemove[1] - intraTol)
     } else {
       newEnd = end
     }
@@ -1292,8 +1321,8 @@ export function lineIntersectsCurveAlt(
 
     // TODO: calculate roughLength first to save time?
     // NOTE: several bezier operations use 100 segments, so 10 * tol ensures that these segments are an order of magnitude smaller than our tolerance
-    if (newStart.dist(newEnd) < 10 * tol) {
-      // if we're lucky, the middles are within tol of each other
+    if (newStart.dist(newEnd) < 10 * intraTol) {
+      // if we're lucky, the middles are within (inter)tol of each other
       let bz = new Bezier(
         { x: from.x, y: from.y },
         { x: cp1.x, y: cp1.y },
@@ -1302,34 +1331,85 @@ export function lineIntersectsCurveAlt(
       )
       let tempBzPoint = bz.compute(0.5)
       let tempPoint = new Point(tempBzPoint.x, tempBzPoint.y)
-      if (newStart.shiftFractionTowards(newEnd, 0.5).dist(tempPoint) < tol) {
-        intersections = newStart.shiftFractionTowards(newEnd, 0.5) // got it!
-        console.log(
-          'found intersection in ',
-          depth,
-          'for segment',
-          segmentName,
-          'iterations by reducing line length to <10*tol'
+      if (newStart.shiftFractionTowards(newEnd, 0.5).dist(tempPoint) < interTol) {
+        // find the closest point (to intraTol precision)
+        // use LookUpTable to create a list of candidates
+        const nsteps = 20
+        const lut = bz.getLUT(nsteps)
+
+        let ind = [0, round(nsteps / 2), nsteps] // start with begin, middle and end
+
+        let cands = Array.from(ind, (ind) => ({
+          ind: ind,
+          dist: pointToLine(newStart, newEnd, new Point(lut[ind].x, lut[ind].y)),
+        }))
+
+        cands.sort((a, b) => a.dist - b.dist) // smallest to largest
+
+        if (cands[0].dist < 0) {
+          console.error('distance found to be negative')
+        }
+
+        // now move from best to second-best until the distance stops improving
+        // exception: if the middle is worst, TODO: what to do then?
+
+        const step = Math.sign(cands[1].ind - cands[0].ind)
+        let best_dist = cands[0].dist
+        console.debug(
+          'start dist',
+          best_dist,
+          'at index',
+          cands[0].ind,
+          'cands',
+          cands,
+          'step',
+          step
         )
-        return depth == 0 ? intersections : { pos: intersections, length: intersectionLength }
+        let ind_try // keep accessible outside of the for-loop
+        for (ind_try = cands[0].ind + step; 0 <= ind_try && ind_try <= nsteps; ind_try += step) {
+          let new_dist = pointToLine(newStart, newEnd, new Point(lut[ind_try].x, lut[ind_try].y))
+          console.debug('new dist', new_dist, 'at index', ind_try)
+          if (new_dist < best_dist) {
+            best_dist = new_dist
+          } else {
+            // revert to the previous ind
+            ind_try = ind_try -= step
+            break
+          }
+        }
+        intersections = new Point(lut[ind_try].x, lut[ind_try].y)
+
+        console.log(
+          'found intersection for segment',
+          segmentName,
+          'in ',
+          depth,
+          'iterations by reducing curve length to <10*tol'
+        )
+        return {
+          pos: intersections,
+          xLength: intersectionLength,
+          dist: best_dist,
+          isEnd: ind_try == 0 ? -1 : ind_try == nsteps ? 1 : 0,
+        }
       }
     }
 
     // continue by removing sections from the curve
 
-    // reduce the length by tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
+    // reduce the length by (intra) tol to account for both the tolerance itself and the fact that the bounds start tol/2 before the start of the curve
     pathTemp = new Path().move(temp_points[0]).curve(temp_points[1], temp_points[2], temp_points[3])
     console.log('pathTemp:', pathTemp, 'temp_points:', temp_points)
     const oldLength = pathTemp.length()
     // don't bother splitting if the section to actually remove (length to remove minus tol) is smaller than tol
-    if (lengthsToRemove[2] - tol > tol) {
-      halves = pathTemp.split(pathTemp.shiftAlong(lengthsToRemove[2] - tol, 10 / tol))
+    if (lengthsToRemove[2] - intraTol > intraTol) {
+      halves = pathTemp.split(pathTemp.shiftAlong(lengthsToRemove[2] - intraTol, 10 / intraTol))
       pathTemp = halves[1].reverse()
     } else {
       pathTemp = pathTemp.reverse()
     }
-    if (lengthsToRemove[3] - tol > tol) {
-      halves = pathTemp.split(pathTemp.shiftAlong(lengthsToRemove[3] - tol, 10 / tol))
+    if (lengthsToRemove[3] - intraTol > intraTol) {
+      halves = pathTemp.split(pathTemp.shiftAlong(lengthsToRemove[3] - intraTol, 10 / intraTol))
       newCurve = halves[1].reverse()
     } else {
       newCurve = pathTemp.reverse()
@@ -1341,7 +1421,12 @@ export function lineIntersectsCurveAlt(
     // - longer than 10*tol: repeat the whole thing with the shorter line+curve
     // - almost as long as the original: split before repeating
     const newLength = newCurve.length()
-    if (newLength < tol) {
+    if (!newCurve) {
+      console.debug('newCurve not defined')
+    } else {
+      console.debug('newCurve:', newCurve)
+    }
+    if (newLength < intraTol) {
       // either we have found an intersection, or there isn't one
       const potentialIntersection = newCurve.shiftFractionAlong(0.5)
       const closestFractionOnLine = projectPointOnBeam(newStart, newEnd, potentialIntersection)
@@ -1364,8 +1449,9 @@ export function lineIntersectsCurveAlt(
         ')'
       )
 
-      if (potentialIntersection.dist(closestPointOnLine) < tol) {
-        intersections = potentialIntersection // got it!
+      if (potentialIntersection.dist(closestPointOnLine) < interTol) {
+        intersections = potentialIntersection // got one!
+        // NOTE: newLength < intraTol, so no further precision needed
         console.log(
           'found intersection for segment',
           segmentName,
@@ -1373,7 +1459,12 @@ export function lineIntersectsCurveAlt(
           depth,
           'iterations by reducing curve length to <tol'
         )
-        return depth == 0 ? intersections : { pos: intersections, length: intersectionLength }
+        return {
+          pos: intersections,
+          xLength: intersectionLength,
+          dist: potentialIntersection.dist(closestPointOnLine),
+          isEnd: 0,
+        }
       } else {
         console.log(
           'ruled out intersections for segment',
@@ -1386,12 +1477,56 @@ export function lineIntersectsCurveAlt(
         return false
       }
     } else if (
-      newStart.dist(newEnd) < 10 * tol &&
-      newCurve.shiftFractionAlong(0.5).dist(newStart.shiftFractionTowards(newEnd, 0.5)) < tol
+      newStart.dist(newEnd) < 10 * intraTol &&
+      newCurve.shiftFractionAlong(0.5).dist(newStart.shiftFractionTowards(newEnd, 0.5)) < interTol
     ) {
-      // TODO: check whether either end of the curve is closer (and then use that)
-      // we're lucky; the middles are within tol of each other
-      intersections = newCurve.shiftFractionAlong(0.5) // got it!
+      // find the closest point (to intraTol precision)
+      // use LookUpTable to create a list of candidates
+      const nsteps = 20
+
+      // construct a Bezier object for easy computation
+      newFrom = newCurve.start()
+      tempOp = newCurve.ops[1]
+      newCp1 = tempOp.cp1
+      newCp2 = tempOp.cp2
+      newTo = tempOp.to
+      let bz = new Bezier(
+        { x: newFrom.x, y: newFrom.y },
+        { x: newCp1.x, y: newCp1.y },
+        { x: newCp2.x, y: newCp2.y },
+        { x: newTo.x, y: newTo.y }
+      )
+      const lut = bz.getLUT(nsteps)
+
+      let ind = [0, round(nsteps / 2), nsteps] // start with begin, middle and end
+
+      let cands = Array.from(ind, (ind) => ({
+        ind: ind,
+        dist: pointToLine(newStart, newEnd, new Point(lut[ind].x, lut[ind].y)),
+      }))
+
+      cands.sort((a, b) => a.dist - b.dist) // smallest to largest
+
+      // now move from best to second-best until the distance stops improving
+      // exception: if the middle is worst, TODO: what to do then?
+
+      const step = Math.sign(cands[1].ind - cands[0].ind)
+      let best_dist = cands[0].dist
+      console.debug('start dist', best_dist, 'at index', cands[0].ind, 'cands', cands, 'step', step)
+      let ind_try // keep accessible outside of the for-loop
+      for (ind_try = cands[0].ind + step; 0 <= ind_try <= nsteps; ind_try += step) {
+        let new_dist = pointToLine(newStart, newEnd, new Point(lut[ind_try].x, lut[ind_try].y))
+        console.debug('new dist', new_dist, 'at index', ind_try)
+        if (new_dist < best_dist) {
+          best_dist = new_dist
+        } else {
+          // revert to the previous ind
+          ind_try = ind_try -= step
+          break
+        }
+      }
+      intersections = new Point(lut[ind_try].x, lut[ind_try].y)
+
       console.log(
         'found intersection for segment',
         segmentName,
@@ -1399,8 +1534,13 @@ export function lineIntersectsCurveAlt(
         depth,
         'iterations by reducing curve length to <10*tol'
       )
-      return depth == 0 ? intersections : { pos: intersections, length: intersectionLength }
-    } else if (newLength > 0.9 * oldLength) {
+      return {
+        pos: intersections,
+        xLength: intersectionLength,
+        dist: best_dist,
+        isEnd: ind_try == 0 ? -1 : ind_try == nsteps ? 1 : 0,
+      }
+    } else if (newLength > 0.9 * oldLength && depth < 4) {
       // split, then repeat the whole thing (recursive function)
       console.log(
         'splitting curve for segment',
@@ -1450,76 +1590,193 @@ export function lineIntersectsCurveAlt(
 
       // add any intersections from the first part
       intersections.push(
-        lineIntersectsCurveAlt(
+        lineIntersectsCurveAltRecursive(
           newStart,
           newEnd,
           ...curvePointsA,
-          tol,
+          interTol,
+          intraTol,
           depth + 1,
-          segmentName + 'left',
+          segmentName + 'head',
           paths
         )
       )
 
       // add any intersections from the second part
       intersections.push(
-        lineIntersectsCurveAlt(
+        lineIntersectsCurveAltRecursive(
           newStart,
           newEnd,
           ...curvePointsB,
-          tol,
+          interTol,
+          intraTol,
           depth + 1,
-          segmentName + 'right',
+          segmentName + 'tail',
           paths
         )
       )
 
       // use intersectionLength to determine whether intersections should be considered unique
-      const flattened_left =
+      const flattened_head =
         intersections[0] instanceof Array ? intersections[0].flat(Infinity) : [intersections[0]]
-      const flattened_right =
+      const flattened_tail =
         intersections[1] instanceof Array ? intersections[1].flat(Infinity) : [intersections[1]]
 
-      // if both left and right found an intersection and they are less than (their average) intersectionLength apart
+      const headOfSplit = flattened_head[flattened_head.length - 1]
+      const tailOfSplit = flattened_tail[0]
 
-      const expectedIntersectionLength =
-        (flattened_left[flattened_left.length - 1].length + flattened_right[0].length) / 2
-      if (!flattened_left[flattened_left.length - 1].pos.dist) {
-        console.warn('something fishy here')
-      }
-      if (
-        flattened_left &&
-        flattened_left[flattened_left.length - 1].pos &&
-        flattened_right &&
-        flattened_right[0].pos &&
-        flattened_left[flattened_left.length - 1].pos.dist(flattened_right[0].pos) <
-          expectedIntersectionLength
-      ) {
-        // pick the middle (using pop and shift to remove the to-be-merged points)
-        const merged_intersection = {
-          pos: flattened_left.pop().pos.shiftTowards(flattened_right.shift().pos, 0.5),
-          length: expectedIntersectionLength,
+      // if both head and tail found an intersection and at least one is an endpoint
+      if (headOfSplit && tailOfSplit) {
+        // NOTE: multiple merge scenarios:
+        // back end of head + front end of tail ==> use average
+        // back end of head + middle of tail ==> use middle (of tail)
+        // back end of head + back end of tail ==> use back end of tail (must be smallest)
+        // front end of head + front end of tail ==> use front of head (must be smallest)
+        // middle of head + front end of tail ==> use middle (of head)
+
+        /*         if (headOfSplit.isEnd == 1) { // back of head, adjacent to tail
+          console.debug('found intersection at back of head, will need to merge')
+        } else if (tailOfSplit.isEnd == -1) {
+          console.debug('found intersection at front of tail, may need to merge')
+        } else { // e.g. two middles
+          console.debug('no need to merge intersections for segment', segmentName)
+        }       */
+
+        let merged_intersection // only gets defined once, why can't it be a const?
+
+        if (headOfSplit.isEnd == 1) {
+          // back of head, adjacent to tail
+          switch (tailOfSplit.isEnd) {
+            case -1:
+              // front of tail, so use average
+              console.debug(
+                'merging front of tail (',
+                tailOfSplit,
+                ') to back of head (',
+                headOfSplit,
+                ') for segment',
+                segmentName
+              )
+              merged_intersection = {
+                pos: flattened_head.pop().pos.shiftTowards(flattened_tail.shift().pos, 0.5),
+                isEnd: 0, // this is the middle of the merged segment
+              }
+              break
+            case 0:
+              // use middle of tail, so keep tail intersection (including .isEnd)
+              console.debug(
+                'dropping end of head (',
+                headOfSplit,
+                ') in favor of middle of tail (',
+                tailOfSplit,
+                ') for segment',
+                segmentName
+              )
+            case 1:
+              // use back of tail, so keep tail intersection (including .isEnd)
+              if (tailOfSplit.isEnd == 1) {
+                console.debug(
+                  'dropping end of head (',
+                  headOfSplit,
+                  ') in favor of end of tail (',
+                  tailOfSplit,
+                  ') for segment',
+                  segmentName
+                )
+              }
+              merged_intersection = flattened_tail.shift()
+              flattened_head.pop() // remove this intersection from the head segment
+              break
+            default:
+              console.error('could not determine intersection type')
+          }
+        } else if (tailOfSplit.isEnd == -1) {
+          // front of tail, adjacent to head
+          switch (headOfSplit.isEnd) {
+            case 1:
+              // back of head, do not merge
+              console.debug(
+                'no need to merge intersections (head:',
+                headOfSplit,
+                ', tail:',
+                tailOfSplit,
+                'for segment',
+                segmentName
+              )
+              merged_intersection = false
+              break
+            case 0:
+              // use middle of head, so keep head intersection (including .isEnd)
+              console.debug(
+                'dropping front of tail (',
+                tailOfSplit,
+                ') in favor of middle of head (',
+                headOfSplit,
+                ') for segment',
+                segmentName
+              )
+            case -1:
+              // use front of head, so keep head intersection (including .isEnd)
+              if (headOfSplit.isEnd == -1) {
+                console.debug(
+                  'dropping front of tail (',
+                  tailOfSplit,
+                  ') in favor of front of head (',
+                  headOfSplit,
+                  ') for segment',
+                  segmentName
+                )
+              }
+              merged_intersection = flattened_head.pop()
+              flattened_tail.shift() // remove this intersection from the tail segment
+              break
+            default:
+              console.error('could not determine intersection type')
+          }
+        } else {
+          // e.g. two middles
+          console.debug('no need to merge intersections for segment', segmentName)
+          merged_intersection = false
         }
 
         //something = condition ? nested_condition ? value_if_both_conditions_are_true : (value_if_nested_condition_is_false : value_if_condition_is_false;
 
-        intersections =
-          flattened_left.length > 0
-            ? flattened_right.length > 0
-              ? [flattened_left, merged_intersection, flattened_right]
-              : flattened_left.length > 0
-                ? [flattened_left, merged_intersection]
-                : [merged_intersection, flattened_right]
-            : merged_intersection
-        console.log(
-          'merged intersections for segment',
-          segmentName,
-          'after',
-          depth,
-          'iterations after splitting curve'
-        )
+        if (!merged_intersection) {
+          intersections = headOfSplit
+            ? tailOfSplit
+              ? [flattened_head, flattened_tail]
+              : headOfSplit
+                ? flattened_head
+                : flattened_tail
+            : false
+        } else {
+          intersections =
+            flattened_head.length > 0
+              ? flattened_tail.length > 0
+                ? [flattened_head, merged_intersection, flattened_tail]
+                : flattened_head.length > 0
+                  ? [flattened_head, merged_intersection]
+                  : [merged_intersection, flattened_tail]
+              : merged_intersection
+          console.log(
+            'merged intersections for segment',
+            segmentName,
+            'with intersection length',
+            intersectionLength,
+            'after',
+            depth,
+            'iterations after splitting curve'
+          )
+        }
       } else {
-        console.debug('no need to merge intersections for segment', segmentName)
+        // one or zero intersections found
+        if (!headOfSplit && !tailOfSplit) {
+          console.debug('no intersections found after splitting segment', segmentName)
+          intersections = false
+        } else {
+          console.debug('single intersection found after splitting segment', segmentName)
+          intersections = headOfSplit ? flattened_head : flattened_tail
+        }
       }
     } else {
       // repeat the whole thing (recursive function)
@@ -1529,14 +1786,15 @@ export function lineIntersectsCurveAlt(
       newCp2 = tempOp.cp2
       newTo = tempOp.to
 
-      intersections = lineIntersectsCurveAlt(
+      intersections = lineIntersectsCurveAltRecursive(
         newStart,
         newEnd,
         newFrom,
         newCp1,
         newCp2,
         newTo,
-        tol,
+        interTol,
+        intraTol,
         depth + 1,
         segmentName,
         paths
@@ -1545,7 +1803,7 @@ export function lineIntersectsCurveAlt(
 
     // TODO remove any 'false's, check for duplicates
 
-    return depth == 0 ? extractPosFrom(intersections) : intersections
+    return intersections
   } else {
     console.log(
       'no intersection found for segment',
@@ -1842,20 +2100,20 @@ export function curvesIntersectAlt(
       halves = bzF.split(0.4) // 'halves' in a loose sense only
 
       console.log('bezier parts:', halves, 'bezier whole:', bz)
-      console.log('split at:', new Point(halves.right.points[0].x, halves.right.points[0].y))
+      console.log('split at:', new Point(halves.tail.points[0].x, halves.tail.points[0].y))
 
       // TODO: find better syntax
       const curvePointsA = [
-        new Point(halves.left.points[0].x, halves.left.points[0].y),
-        new Point(halves.left.points[1].x, halves.left.points[1].y),
-        new Point(halves.left.points[2].x, halves.left.points[2].y),
-        new Point(halves.left.points[3].x, halves.left.points[3].y),
+        new Point(halves.head.points[0].x, halves.head.points[0].y),
+        new Point(halves.head.points[1].x, halves.head.points[1].y),
+        new Point(halves.head.points[2].x, halves.head.points[2].y),
+        new Point(halves.head.points[3].x, halves.head.points[3].y),
       ]
       const curvePointsB = [
-        new Point(halves.right.points[0].x, halves.right.points[0].y),
-        new Point(halves.right.points[1].x, halves.right.points[1].y),
-        new Point(halves.right.points[2].x, halves.right.points[2].y),
-        new Point(halves.right.points[3].x, halves.right.points[3].y),
+        new Point(halves.tail.points[0].x, halves.tail.points[0].y),
+        new Point(halves.tail.points[1].x, halves.tail.points[1].y),
+        new Point(halves.tail.points[2].x, halves.tail.points[2].y),
+        new Point(halves.tail.points[3].x, halves.tail.points[3].y),
       ]
 
       intersections = []
@@ -1872,7 +2130,7 @@ export function curvesIntersectAlt(
           newToE,
           tol,
           depth + 1,
-          segmentName + 'left',
+          segmentName + 'head',
           paths
         )
       )
@@ -1887,7 +2145,7 @@ export function curvesIntersectAlt(
           newToE,
           tol,
           depth + 1,
-          segmentName + 'right',
+          segmentName + 'tail',
           paths
         )
       )
@@ -1905,35 +2163,35 @@ export function curvesIntersectAlt(
 
       if (intersectionLength) {
         // use intersectionLength to determine whether intersections should be considered unique
-        const flattened_left =
+        const flattened_head =
           intersections[0] instanceof Array ? intersections[0].flat(Infinity) : [intersections[0]]
-        const flattened_right =
+        const flattened_tail =
           intersections[1] instanceof Array ? intersections[1].flat(Infinity) : [intersections[1]]
 
-        // if both left and right found an intersection and they are less than intersectionLength apart
+        // if both head and tail found an intersection and they are less than intersectionLength apart
         if (
-          flattened_left[flattened_left.length - 1] &&
-          flattened_right[0] &&
-          flattened_left[flattened_left.length - 1].dist(flattened_right[0]) < intersectionLength
+          flattened_head[flattened_head.length - 1] &&
+          flattened_tail[0] &&
+          flattened_head[flattened_head.length - 1].dist(flattened_tail[0]) < intersectionLength
         ) {
           // pick the middle (using pop and shift to remove the to-be-merged points)
-          const merged_intersection = flattened_left
-            .pop()
-            .shiftTowards(flattened_right.shift(), 0.5)
-          intersections = [flattened_left, merged_intersection, flattened_right]
+          const merged_intersection = flattened_head.pop().shiftTowards(flattened_tail.shift(), 0.5)
+          intersections = [flattened_head, merged_intersection, flattened_tail]
           console.log(
             'merged intersections for segment',
             segmentName,
+            'with intersection length',
+            intersectionLength,
             'after',
             depth,
             'iterations after splitting curve'
           )
         } else {
           console.log(
-            'no need to merge intersections (left:',
-            flattened_left,
-            'right:',
-            flattened_right,
+            'no need to merge intersections (head:',
+            flattened_head,
+            'tail:',
+            flattened_tail,
             'length:',
             intersectionLength,
             ')'
@@ -1983,3 +2241,41 @@ export function curvesIntersectAlt(
     return false
   }
 }
+
+export function pointToLine(from, to, check, signed = false) {
+  // distance from a point to its projection on a line (not beam)
+
+  const frac = projectPointOnBeam(from, to, check)
+
+  // always calculate distance (to establish the sign)
+  const signedDistToBeam =
+    ((to.x - from.x) * (from.y - check.y) - (from.x - check.x) * (to.y - from.y)) /
+    Math.sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y))
+
+  if (frac <= 0 || frac >= 1) {
+    const absDist = frac <= 0 ? from.dist(check) : to.dist(check)
+    return signed ? absDist * Math.sign(signedDistToBeam) : absDist
+  } else {
+    return signed ? signedDistToBeam : Math.abs(signedDistToBeam)
+  }
+}
+
+// from bezier-js
+/*   getLUT(steps) {
+    this.verify();
+    steps = steps || 100;
+    if (this._lut.length === steps + 1) {
+      return this._lut;
+    }
+    this._lut = [];
+    // n steps means n+1 points
+    steps++;
+    this._lut = [];
+    for (let i = 0, p, t; i < steps; i++) {
+      t = i / (steps - 1);
+      p = this.compute(t);
+      p.t = t;
+      this._lut.push(p);
+    }
+    return this._lut;
+  } */
