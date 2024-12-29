@@ -1461,7 +1461,7 @@ export function lineIntersectsCurveAltRecursive(
         )
         return {
           pos: intersections,
-          xLength: intersectionLength,
+          xLength: 2, // either end may require merging
           dist: potentialIntersection.dist(closestPointOnLine),
           isEnd: 0,
         }
@@ -1508,10 +1508,11 @@ export function lineIntersectsCurveAltRecursive(
       cands.sort((a, b) => a.dist - b.dist) // smallest to largest
 
       // now move from best to second-best until the distance stops improving
-      // exception: if the middle is worst, TODO: what to do then?
+      // while also keeping track of max_dist
 
       const step = Math.sign(cands[1].ind - cands[0].ind)
       let best_dist = cands[0].dist
+      let almost_worst_dist = cands[1].dist // actually 'worst' dist in the 'best' direction, not truly worst
       console.debug('start dist', best_dist, 'at index', cands[0].ind, 'cands', cands, 'step', step)
       let ind_try // keep accessible outside of the for-loop
       for (ind_try = cands[0].ind + step; 0 <= ind_try <= nsteps; ind_try += step) {
@@ -1521,11 +1522,52 @@ export function lineIntersectsCurveAltRecursive(
           best_dist = new_dist
         } else {
           // revert to the previous ind
-          ind_try = ind_try -= step
-          break
+          const ind_best = (ind_try -= step)
+          if (almost_worst_dist > interTol) {
+            // no need to continue, intersection does not extend beyond bounds
+            break
+          } else if (new_dist > interTol) {
+            almost_worst_dist = new_dist
+            break
+          } else {
+            continue // keep going
+          }
         }
       }
-      intersections = new Point(lut[ind_try].x, lut[ind_try].y)
+      if (new_dist < best_dist) {
+        // final run of the loop was the best
+        const ind_best = ind_try
+      }
+      intersections = new Point(lut[ind_best].x, lut[ind_best].y)
+
+      if (almost_worst_dist > interTol && (cands[0].dist > interTol || cands[2].dist > interTol)) {
+        intersectionLength = 0
+      } else if (almost_worst_dist > interTol) {
+        // need to check the other side
+
+        // move in the other direction this time
+        // no need to store the value, just check whether we exceed interTol
+        for (ind_try = cands[0].ind - step; 0 <= ind_try <= nsteps; ind_try -= step) {
+          let new_dist = pointToLine(newStart, newEnd, new Point(lut[ind_try].x, lut[ind_try].y))
+          if (new_dist > interTol) {
+            break
+          }
+        }
+
+        if (new_dist > interTol) {
+          // there is a value that exceeds interTol, but the endpoint on this side was within interTol
+          // ==> found a second intersection (splitting would have been easier :/)
+          console.error('ignoring second intersection')
+        } else {
+          // this intersection may need to be merged
+          // value of intersectionLength indicates number, sign indicates direction (+1: right, -1: left)
+          intersectionLength = sign(cands[2].ind - cands[0].ind)
+        }
+      } else if (almost_worst_dist <= interTol) {
+        intersectionLength = sign(cands[1].ind - cands[0].ind)
+      } else {
+        intersectionLength = 2 // either end may require merging
+      }
 
       console.log(
         'found intersection for segment',
@@ -1534,12 +1576,18 @@ export function lineIntersectsCurveAltRecursive(
         depth,
         'iterations by reducing curve length to <10*tol'
       )
-      return {
-        pos: intersections,
-        xLength: intersectionLength,
-        dist: best_dist,
-        isEnd: ind_try == 0 ? -1 : ind_try == nsteps ? 1 : 0,
-      }
+
+      // check whether the intersection area extends to the end of the segment
+      // (two intersection with a span within interTol should be merged)
+      if (cands[2].dist < interTol) {
+        //
+      } else if (cands[1].dist < interTol)
+        return {
+          pos: intersections,
+          xLength: intersectionLength,
+          dist: best_dist,
+          isEnd: ind_try == 0 ? -1 : ind_try == nsteps ? 1 : 0,
+        }
     } else if (newLength > 0.9 * oldLength && depth < 4) {
       // split, then repeat the whole thing (recursive function)
       console.log(
@@ -1625,6 +1673,7 @@ export function lineIntersectsCurveAltRecursive(
       const headOfSplit = flattened_head[flattened_head.length - 1]
       const tailOfSplit = flattened_tail[0]
 
+      // scenario one: local minimum at the end of a segment (is probably not a true minimum)
       // if both head and tail found an intersection and at least one is an endpoint
       if (headOfSplit && tailOfSplit) {
         // NOTE: multiple merge scenarios:
@@ -1735,6 +1784,14 @@ export function lineIntersectsCurveAltRecursive(
           }
         } else {
           // e.g. two middles
+
+          // scenario two: two 'true' intersections should be merged if the respective
+          //  segments between them are within interTol of each other
+
+          if (headOfSplit.intersectionLength != 0 && tailOfSplit.intersectionLength != 0) {
+            // merge if the sides are compatible
+          }
+
           console.debug('no need to merge intersections for segment', segmentName)
           merged_intersection = false
         }
